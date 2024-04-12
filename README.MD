@@ -67,7 +67,7 @@
 
 ## PinOut
 
-- View 'utilities.h' in each example folder
+- View `utilities.h` in each example folder
 
 
 ## Datasheet
@@ -98,5 +98,20 @@
         while (true);
     }
 ```
+2. Ink screen takeout:
+
+Note: The size of the display picture should be consistent with the width and height of the ink screen otherwise it may not achieve the display effect
+
+Use the mold taking software `image2lcd`
+
+Select `Output data type` as` C Language Array `
+
+Select `Scan Mode` as` Vertical Scan `
+
+Select Output Grayscale to Monochrome
+
+Select `maximum width and height` according to the size of the ink screen
+
+After opening the file, you need to delete the first six bits in the array and add a reference to it
 
 # FAQ
