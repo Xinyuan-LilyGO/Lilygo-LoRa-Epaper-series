@@ -4,14 +4,7 @@
 /*
 * This sample program only supports SX1268
 * */
-// #define LILYGO_TBeam_V0_7
-// #define LILYGO_TBeam_V1_X
-// #define LILYGO_T3_V1_0
-// #define LILYGO_T3_V1_3
-// #define LILYGO_T3_V1_6
-// #define LILYGO_T3_V2_0
-// #define LILYGO_T3_S3_V1_0
-// #define LILYGO_T3_S3_E_PAPER_V_1_0
+// #define LILYGO_S3_E_PAPER_V_1_0
 /*
 * The default program uses 433MHz,
 * if you need to change it,

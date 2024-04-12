@@ -4,7 +4,7 @@
 /*
 * This sample program only supports SX1262
 * */
-// #define LILYGO_T3_S3_E_PAPER_V_1_0
+// #define LILYGO_S3_E_PAPER_V_1_0
 /*
 * The default program uses 868MHz,
 * if you need to change it,

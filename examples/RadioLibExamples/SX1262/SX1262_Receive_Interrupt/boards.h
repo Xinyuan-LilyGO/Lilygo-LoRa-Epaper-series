@@ -29,17 +29,8 @@ void initBoard()
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
 
 #ifdef BOARD_LED
-    /*
-     * T-BeamV1.0, V1.1 LED defaults to low level as trun on,
-     * so it needs to be force
-     * d to pull up
-     * * * * */
-#if LED_ON == LOW
-    gpio_hold_dis(GPIO_NUM_4);
-#endif
     pinMode(BOARD_LED, OUTPUT);
     digitalWrite(BOARD_LED, LED_ON);
-
 #endif
 
     pinMode(SDCARD_MISO, INPUT_PULLUP);

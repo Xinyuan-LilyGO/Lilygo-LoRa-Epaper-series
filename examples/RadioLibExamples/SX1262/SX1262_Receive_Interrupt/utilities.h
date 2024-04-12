@@ -4,19 +4,15 @@
 /*
 * This sample program only supports SX1262
 * */
-// #define LILYGO_T3_S3_E_PAPER_V_1_0
+#define LILYGO_S3_E_PAPER_V_1_0
 /*
 * The default program uses 868MHz,
 * if you need to change it,
 * please open this note and change to the frequency you need to test
 * */
 
-#ifndef LoRa_frequency
 #define LoRa_frequency      868.0
-#endif
 
-
-#define UNUSE_PIN                   (0)
 
 #if defined(LILYGO_S3_E_PAPER_V_1_0)
 

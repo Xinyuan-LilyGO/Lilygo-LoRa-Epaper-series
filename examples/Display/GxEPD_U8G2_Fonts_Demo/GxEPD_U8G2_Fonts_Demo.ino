@@ -1,10 +1,12 @@
-/*
-    LilyGo Ink Screen Series u8g2Fonts Test
-        - Created by Puppy liang
-*/
 
-// According to the board, cancel the corresponding macro definition
-#define LILYGO_S3_E_PAPER_V_1_0
+/**
+ * @file      GxEPD_U8G2_Fonts_Demo.ino
+ * @author    Puppy Liang (puppy0612@163.com)
+ * @license   MIT
+ * @copyright Copyright (c) 2024  Shenzhen Xin Yuan Electronic Technology Co., Ltd
+ * @date      2024-04-01
+ *
+ */
 
 #include <GxEPD.h>
 
@@ -32,6 +34,7 @@
 // #include <GxGDEW027C44/GxGDEW027C44.h>    // 2.7" b/w/r form GoodDisplay
 // #include <GxGDEH029A1/GxGDEH029A1.h>      // 2.9" b/w   form GoodDisplay
 // #include <GxDEPG0750BN/GxDEPG0750BN.h>    // 7.5" b/w   form DKE GROUP
+
 #endif
 #include "utilities.h"
 #include <U8g2_for_Adafruit_GFX.h>

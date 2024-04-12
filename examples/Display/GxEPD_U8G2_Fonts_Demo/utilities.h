@@ -1,15 +1,9 @@
 
 #pragma once
 
-/*
-* This sample program only supports SX1262
-* */
+
+// According to the board, cancel the corresponding macro definition
 #define LILYGO_S3_E_PAPER_V_1_0
-/*
-* The default program uses 868MHz,
-* if you need to change it,
-* please open this note and change to the frequency you need to test
-* */
 
 
 
