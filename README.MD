@@ -1,7 +1,7 @@
 <h1 align = "center">🌟LilyGo LoRa Epaper Series🌟</h1>
 
 ## **English | [中文](./README_CN.MD)**
-## Quick start:
+## 1️⃣Quick start:
 
 ### PlatformIO Quick Start (Recommended)
 
@@ -30,7 +30,7 @@
 9. Upload
 
 
-## Example description
+## 2️⃣Example description
 ```
 ├─ ArduinoLoRa       # Only support SX1276/SX1278 radio module
 │  ├─LoRaReceiver
@@ -65,12 +65,12 @@
 ```
 
 
-## PinOut
+## 3️⃣PinOut
 
-- View `utilities.h` in each example folder
+- View 'utilities.h' in each example folder
 
 
-## Datasheet
+## 4️⃣Datasheet
 
 
 - [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
@@ -78,7 +78,7 @@
 - [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
 - [SX1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
 
-## Announcements
+## 5️⃣Announcements
 
 1. After setting the LoRa output power, set the lowest current. Set sx1262 as follows :
 
@@ -114,4 +114,4 @@ Select `maximum width and height` according to the size of the ink screen
 
 After opening the file, you need to delete the first six bits in the array and add a reference to it
 
-# FAQ
+# 6️⃣FAQ

@@ -2,13 +2,13 @@
 
 ## **[English](./README.MD) | 中文**
 
-## 快速开始:
+## 1️⃣快速开始:
 
 ###  PlatformIO Quick Start (Recommended)
 
-- 安装Visual Studio Code和Python
-- 在VisualStudioCode扩展中搜索PlatformIO插件并安装它，安装完成后，需要重新启动VisualStudioCode
-- 重新启动VisualStudioCode后，选择“VisualStudioCode”左上角的“File”->“Open Folder”->`LILYGO-LORA-EPAPER-SERIES`目录
+- 安装`Visual Studio Code`和`Python`
+- 在`Visual Studio Code`扩展中搜索`PlatformIO`插件并安装它，安装完成后，需要重新启动`Visual Studio Code`
+- 重新启动`Visual Studio Code`后，选择`Visual Studio Code`左上角的`File`->`Open Folder`->`LILYGO-LORA-EPAPER-SERIES`目录
 - 打开`platformio.ini`文件，在platformio列中单击取消其中一行`default_envs` = xxxx的注释，以确保只有一行有效
 - 点击左下角的(✔)符号进行编译
 - 将电路板连接到计算机的USB接口
@@ -21,14 +21,14 @@
 - 安装 [Arduino ESP32 V 2.0.5 or above and below V3.0](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
 - 下载`Lilygo-LoRa-Epaper-series`，移动到Arduino库文件夹(例如:C:\Users\YourName\Documents\Arduino\libraries)
 - 将[lib文件夹](./lib/)中的所有文件夹复制到Arduino库文件夹(例如C:\Users\YourName\Documents\Arduino\libraries)
-- 进入下载的“T-Display-S3/examples”目录
+- 进入下载的`T-Display-S3/examples`目录
 - `Lilygo-LoRa-Epaper-series`选择`ESP32S3 Dev Module`
 - 在端口中选择板子的端口
 - 请在每个示例中的 `utilities.h` 文件的上方根据你的板子型号取消注释,否则编译将报错误
 - 上传
 
 
-## 示例描述
+## 2️⃣示例描述
 
 ```
 ├── Display        
@@ -62,19 +62,19 @@
 
 
 
-## 引脚映射
+## 3️⃣引脚映射
 
--查看每个示例文件夹中的 `utilities.h`
+- 查看每个示例文件夹中的 `utilities.h`
 
 
-## 数据手册
+## 4️⃣数据手册
 - [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [SX1278](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
 - [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
 - [SX1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
 
 
-## 注意事项
+## 5️⃣注意事项
 
 1. LoRa设置输出功率后需要设置最低电流。设置sx1262如下 :
 
@@ -110,4 +110,4 @@
 
 保存文件即可,打开文件后需要将数组内的前六位删除 并加入引用即可使用
 
-## 注意:
+## 6️⃣FAQ:
