@@ -12,13 +12,12 @@
 * */
 
 #define LoRa_frequency      868.0
-
+#define Bandwidth           125
+#define OutputPower         22 
+#define Currentlimit        140
+#define SpreadingFactor     8
 
 #if defined(LILYGO_S3_E_PAPER_V_1_0)
-
-#define I2C_SDA                 18
-#define I2C_SCL                 17
-#define OLED_RST                UNUSE_PIN
 
 #define EDP_BUSY_PIN            48
 #define EDP_RSET_PIN            47
@@ -55,8 +54,6 @@
 #define BUTTON_PIN              0
 
 #define HAS_SDCARD
-#define EDP_DISPLAY
-// #define HAS_DISPLAY
 
 #else
 #error "For the first use, please define the board version and model in <utilities. h>"

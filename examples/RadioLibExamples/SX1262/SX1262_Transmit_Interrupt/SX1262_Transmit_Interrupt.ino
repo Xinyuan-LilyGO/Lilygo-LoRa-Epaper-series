@@ -1,15 +1,15 @@
 /*
-   RadioLib SX1276 Transmit Example
-   This example transmits packets using SX1276 LoRa radio module.
-   Each packet contains up to 256 bytes of data, in the form of:
+    RadioLib SX1276 Transmit Example
+    This example transmits packets using SX1276 LoRa radio module.
+    Each packet contains up to 256 bytes of data, in the form of:
     - Arduino String
     - null-terminated char array (C-string)
     - arbitrary binary data (byte array)
-   Other modules from SX127x/RFM9x family can also be used.
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx127xrfm9x---lora-modem
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+    Other modules from SX127x/RFM9x family can also be used.
+    For default module settings, see the wiki page
+    https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx127xrfm9x---lora-modem
+    For full API reference, see the GitHub Pages
+    https://jgromes.github.io/RadioLib/
 */
 
 
@@ -48,30 +48,44 @@ void setFlag(void)
 
 void setup()
 {
+
     initBoard();
+    Serial.println("[SX1262] Transmit ");
     // When the power is turned on, a delay is required.
     delay(1500);
-
 
     // initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
     int state = radio.begin(LoRa_frequency);
 
+    if (state == RADIOLIB_ERR_NONE) 
+    {
+        radio.setBandwidth(Bandwidth);
+        radio.setOutputPower(OutputPower);
+        radio.setCurrentLimit(Currentlimit);
+        radio.setSpreadingFactor(SpreadingFactor);
 
-    if (state != RADIOLIB_ERR_NONE) {
-        display.setRotation(1);
+        Serial.print("LoRa_frequency : ");
+        Serial.println(LoRa_frequency);
+        Serial.print("Bandwidth : ");
+        Serial.println(Bandwidth);
+        Serial.print("OutputPower : ");
+        Serial.println(OutputPower);
+        Serial.print("Currentlimit : ");
+        Serial.println(Currentlimit);                
+        Serial.print("SpreadingFactor : ");
+        Serial.println(SpreadingFactor);  
+        Serial.println(F("success!"));
+    } else {       
+        Serial.print(F("failed, code "));
+        Serial.println(state);
+        display.setRotation(3);
         display.fillScreen(GxEPD_WHITE);
         display.setTextColor(GxEPD_BLACK);
         display.setFont(&FreeMonoBold9pt7b);
         display.setCursor(0, 15);
         display.println("Initializing: FAIL!");
         display.update();
-    }
-    if (state == RADIOLIB_ERR_NONE) {
-        Serial.println(F("success!"));
-    } else {
-        Serial.print(F("failed, code "));
-        Serial.println(state);
         while (true);
     }
 

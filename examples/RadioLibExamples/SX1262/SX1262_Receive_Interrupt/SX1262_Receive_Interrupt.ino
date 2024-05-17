@@ -1,19 +1,19 @@
 /*
-   RadioLib SX1262 Transmit Example
+    RadioLib SX1262 Transmit Example
 
-   This example transmits packets using SX1262 LoRa radio module.
-   Each packet contains up to 256 bytes of data, in the form of:
+    This example transmits packets using SX1262 LoRa radio module.
+    Each packet contains up to 256 bytes of data, in the form of:
     - Arduino String
     - null-terminated char array (C-string)
     - arbitrary binary data (byte array)
 
-   Other modules from SX127x/RFM9x family can also be used.
+    Other modules from SX127x/RFM9x family can also be used.
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx127xrfm9x---lora-modem
+    For default module settings, see the wiki page
+    https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx127xrfm9x---lora-modem
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+    For full API reference, see the GitHub Pages
+    https://jgromes.github.io/RadioLib/
 */
 
 #include <RadioLib.h>
@@ -46,19 +46,42 @@ void setFlag(void)
 void setup()
 {
     initBoard();
+    Serial.println("[SX1262] Receive ");
     // When the power is turned on, a delay is required.
     delay(1500);
     // initialize SX1262 with default settings
-    Serial.print(F("[SX1262] Initializing ... "));
+    Serial.println(F("[SX1262] Initializing ... "));
     int state = radio.begin(LoRa_frequency);
     if (state == RADIOLIB_ERR_NONE)
     {
+        radio.setBandwidth(Bandwidth);
+        radio.setOutputPower(OutputPower);
+        radio.setCurrentLimit(Currentlimit);
+        radio.setSpreadingFactor(SpreadingFactor);
+
+        Serial.print("LoRa_frequency : ");
+        Serial.println(LoRa_frequency);
+        Serial.print("Bandwidth : ");
+        Serial.println(Bandwidth);
+        Serial.print("OutputPower : ");
+        Serial.println(OutputPower);
+        Serial.print("Currentlimit : ");
+        Serial.println(Currentlimit);                
+        Serial.print("SpreadingFactor : ");
+        Serial.println(SpreadingFactor);   
         Serial.println(F("success!"));
     }
     else
     {
         Serial.print(F("failed, code "));
         Serial.println(state);
+        display.setRotation(3);
+        display.fillScreen(GxEPD_WHITE);
+        display.setTextColor(GxEPD_BLACK);
+        display.setFont(&FreeMonoBold9pt7b);
+        display.setCursor(0, 15);
+        display.println("Initializing: FAIL!");
+        display.update();
         while (true);
     }
 
@@ -67,12 +90,12 @@ void setup()
     radio.setDio1Action(setFlag);
 
     // start listening for LoRa packets
-    Serial.print(F("[SX1262] Starting to listen ... "));
+    Serial.println(F("[SX1262] Starting to listen ... "));
     state = radio.startReceive();
 
     if (state != RADIOLIB_ERR_NONE)
     {
-        display.setRotation(1);
+        display.setRotation(3);
         display.fillScreen(GxEPD_WHITE);
         display.setTextColor(GxEPD_BLACK);
         display.setFont(&FreeMonoBold9pt7b);
