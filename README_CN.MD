@@ -7,7 +7,7 @@
 ### 🍇 PlatformIO Quick Start (Recommended)
 
 - 安装`Visual Studio Code`和`Python`
-- 在`Visual Studio Code`扩展中搜索`PlatformIO`插件并安装它，安装完成后，需要重新启动`Visual Studio Code`
+- 在`Visual Studio Code`扩展中搜索`PlatformIO.IDE`插件并安装它，安装完成后，需要重新启动`Visual Studio Code`
 - 重新启动`Visual Studio Code`后，选择`Visual Studio Code`左上角的`File`->`Open Folder`->`LILYGO-LORA-EPAPER-SERIES`目录
 - 打开`platformio.ini`文件，在platformio列中单击取消其中一行`default_envs` = xxxx的注释，以确保只有一行有效
 - 点击左下角的(✔)符号进行编译
