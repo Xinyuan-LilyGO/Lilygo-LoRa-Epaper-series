@@ -5,9 +5,9 @@
 
 ### PlatformIO Quick Start (Recommended)
 
-- Install Visual Studio Code and Python
-- Search for the PlatformIO plugin in the VisualStudioCode extension and install it, after the installation is complete, you need to restart VisualStudioCode
-- After restarting VisualStudioCode, select the `File` -> `Open Folder` -> `LILYGO-LORA-EPAPER-SERIES` directory in the upper left corner of VisualStudioCode
+- Install `Visual Studio Code` and `Python`
+- Search for the `PlatformIO.IDE` plugin in the `Visual Studio Code` extension and install it, after the installation is complete, you need to restart `Visual Studio Code`
+- After restarting `Visual Studio Code`, select the `File` -> `Open Folder` -> `LILYGO-LORA-EPAPER-SERIES` directory in the upper left corner of `Visual Studio Code`
 - Open the `platformio.ini` file and click in the platformio column to uncomment one line, `default_envs` = xxxx, to ensure that only one line is valid
 - Click the (✔) symbol in the bottom left corner to compile
 - Connect the circuit board to the USB port of the computer
@@ -60,8 +60,6 @@
 │   ├── SD_Test
 │   └── SD_Epaper_Test
 └─SleepTest
-
-
 ```
 
 
@@ -101,6 +99,10 @@
 2. Ink screen takeout:
 
 Note: The size of the display picture should be consistent with the width and height of the ink screen otherwise it may not achieve the display effect
+
+The following is a reference image: ⚠️ The size of the image is 250*128
+
+![product](src\image2lcd.jpg)
 
 Use the mold taking software `image2lcd`
 

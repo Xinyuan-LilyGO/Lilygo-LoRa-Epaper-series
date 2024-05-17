@@ -4,7 +4,7 @@
 
 ## 1️⃣快速开始:
 
-###  PlatformIO Quick Start (Recommended)
+### 🍇 PlatformIO Quick Start (Recommended)
 
 - 安装`Visual Studio Code`和`Python`
 - 在`Visual Studio Code`扩展中搜索`PlatformIO`插件并安装它，安装完成后，需要重新启动`Visual Studio Code`
@@ -16,7 +16,7 @@
 - 点击(插头符号)监控串口输出
 
 
-### Arduino IDE Quick Start
+### 🍈Arduino IDE Quick Start
 - 安装 [Arduino IDE](https://www.arduino.cc/en/software)
 - 安装 [Arduino ESP32 V 2.0.5 or above and below V3.0](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
 - 下载`Lilygo-LoRa-Epaper-series`，移动到Arduino库文件夹(例如:C:\Users\YourName\Documents\Arduino\libraries)
@@ -56,10 +56,7 @@
 │   ├── SD_Test
 │   └── SD_Epaper_Test
 └─SleepTest
-
-
 ```
-
 
 
 ## 3️⃣引脚映射
@@ -98,6 +95,10 @@
 
 注意:显示图片的大小要与墨水屏的宽高一致 否则可能无法达到显示的效果
 
+下图为参考图片: ⚠️图片的大小为250*128
+
+![product](src\image2lcd.jpg)
+
 使用取模软件`image2lcd`
 
 选择`输出数据类型`为`C语言数组`
@@ -108,6 +109,10 @@
 
 根据墨水屏的大小选择`最大宽度和高度` 
 
+可以参考图片
+
 保存文件即可,打开文件后需要将数组内的前六位删除 并加入引用即可使用
+
+
 
 ## 6️⃣FAQ:
