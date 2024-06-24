@@ -102,7 +102,7 @@ Note: The size of the display picture should be consistent with the width and he
 
 The following is a reference image: ⚠️ The size of the image is 250*128
 
-![product](src\image2lcd.jpg)
+![product](./src/image2lcd.jpg)
 
 Use the mold taking software `image2lcd`
 
