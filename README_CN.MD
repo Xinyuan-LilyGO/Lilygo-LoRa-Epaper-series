@@ -97,7 +97,7 @@
 
 下图为参考图片: ⚠️图片的大小为250*128
 
-![product](./src/image2lcd.jpg)
+![product](src\image2lcd.jpg)
 
 使用取模软件`image2lcd`
 
