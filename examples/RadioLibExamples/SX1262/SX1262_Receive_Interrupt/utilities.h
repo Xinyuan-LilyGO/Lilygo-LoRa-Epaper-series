@@ -34,6 +34,7 @@
 #define RADIO_DIO1_PIN          33
 #define RADIO_BUSY_PIN          34
 #define RADIO_RST_PIN           8
+#define RADIO_POW_PIN           35
 
 //! SX1276/78 module only
 #define RADIO_DIO0_PIN          9

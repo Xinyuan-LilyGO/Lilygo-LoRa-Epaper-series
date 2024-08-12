@@ -105,6 +105,9 @@ void initBoard()
 {
     Serial.begin(115200);
     Serial.println("initBoard");
+    pinMode(RADIO_POW_PIN, OUTPUT);
+    digitalWrite(RADIO_POW_PIN, LED_ON);
+
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
 
 #ifdef BOARD_LED
