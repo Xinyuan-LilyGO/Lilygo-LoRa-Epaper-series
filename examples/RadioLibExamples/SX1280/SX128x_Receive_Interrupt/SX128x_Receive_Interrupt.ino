@@ -31,20 +31,15 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 // flag to indicate that a packet was received
 volatile bool receivedFlag = false;
-
-// disable interrupt when it's not needed
-volatile bool enableInterrupt = true;
-
+static String rssi = "0dBm";
+static String snr = "0dB";
+static String payload = "0";
 // this function is called when a complete packet
 // is received by the module
 // IMPORTANT: this function MUST be 'void' type
 //            and MUST NOT have any arguments!
 void setFlag(void)
 {
-    // check if the interrupt is enabled
-    if (!enableInterrupt) {
-        return;
-    }
 
     // we got a packet, set the flag
     receivedFlag = true;
@@ -60,8 +55,7 @@ void setup()
     Serial.print(F("[SX1280] Initializing ... "));
     int state = radio.begin();
 
-    if (state != RADIOLIB_ERR_NONE)
-    {
+    if (state != RADIOLIB_ERR_NONE) {
         display.setRotation(1);
         display.fillScreen(GxEPD_WHITE);
         display.setTextColor(GxEPD_BLACK);
@@ -69,14 +63,12 @@ void setup()
         display.setCursor(0, 15);
         display.println("Initializing: FAIL!");
         display.update();
-    }
-
-    if (state == RADIOLIB_ERR_NONE) {
-        Serial.println(F("success!"));
-    } else {
         Serial.print(F("failed, code "));
         Serial.println(state);
         while (true);
+    }
+    else {
+        Serial.println(F("success!"));
     }
 
 #if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
@@ -142,9 +134,6 @@ void loop()
 {
     // check if the flag is set
     if (receivedFlag) {
-        // disable the interrupt service routine while
-        // processing the data
-        enableInterrupt = false;
 
         // reset flag
         receivedFlag = false;
@@ -153,8 +142,7 @@ void loop()
         // String str;
         // int state = radio.readData(str);
 
-        uint32_t counter;
-        int state = radio.readData((uint8_t *)&counter, 4);
+        int state = radio.readData(payload);
 
         // you can also read received data as byte array
         /*
@@ -163,41 +151,47 @@ void loop()
         */
 
         if (state == RADIOLIB_ERR_NONE) {
+
+            rssi = String(radio.getRSSI()) + "dBm";
+            snr = String(radio.getSNR()) + "dB";
+
             // packet was successfully received
             Serial.println(F("[SX1280] Received packet!"));
 
             // print data of the packet
             Serial.print(F("[SX1280] Data:\t\t"));
-            Serial.println(counter);
+            Serial.println(payload);
 
             // print RSSI (Received Signal Strength Indicator)
             Serial.print(F("[SX1280] RSSI:\t\t"));
-            Serial.print(radio.getRSSI());
-            Serial.println(F(" dBm"));
+            Serial.println(rssi);
 
             // print SNR (Signal-to-Noise Ratio)
             Serial.print(F("[SX1280] SNR:\t\t"));
-            Serial.print(radio.getSNR());
-            Serial.println(F(" dB"));
+            Serial.println(snr);
 
-            display.setRotation(1);
+
+            display.setRotation(3);
             display.fillScreen(GxEPD_WHITE);
             display.setTextColor(GxEPD_BLACK);
             display.setFont(&FreeMonoBold9pt7b);
             display.setCursor(0, 15);
             display.println("[SX128x] Received:");
+            
             display.setCursor(0, 35);
             display.println("DATA:"); 
             display.setCursor(55, 35);
-            display.println(counter); 
+            display.println(payload); 
+
             display.setCursor(0, 55);
             display.println("RSSI:"); 
             display.setCursor(55, 55);
-            display.println(radio.getRSSI());
+            display.println(rssi);
+
             display.setCursor(0, 75);
             display.println("SNR :"); 
             display.setCursor(55, 75);
-            display.println(radio.getSNR());  
+            display.println(snr);  
             display.update();
 
         } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
@@ -214,9 +208,6 @@ void loop()
         // put module back to listen mode
         radio.startReceive();
 
-        // we're ready to receive more packets,
-        // enable interrupt service routine
-        enableInterrupt = true;
     }
 }
 

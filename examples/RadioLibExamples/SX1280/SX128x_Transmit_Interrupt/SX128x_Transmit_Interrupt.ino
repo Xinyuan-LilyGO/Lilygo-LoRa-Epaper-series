@@ -32,8 +32,9 @@ volatile bool transmittedFlag = false;
 // disable interrupt when it's not needed
 volatile bool enableInterrupt = true;
 
-uint32_t counter = 0;
 
+static uint32_t count = 0;
+static String payload;
 // this function is called when a complete packet
 // is transmitted by the module
 // IMPORTANT: this function MUST be 'void' type
@@ -58,7 +59,7 @@ void setup()
     // initialize SX1280 with default settings
     Serial.print(F("[SX1280] Initializing ... "));
     int state = radio.begin();
-
+  
     if (state != RADIOLIB_ERR_NONE) {
         display.setRotation(1);
         display.fillScreen(GxEPD_WHITE);
@@ -67,19 +68,14 @@ void setup()
         display.setCursor(0, 15);
         display.println("Initializing: FAIL!");
         display.update();
-    }
-    if (state == RADIOLIB_ERR_NONE) {
-        Serial.println(F("success!"));
-    } else {
         Serial.print(F("failed, code "));
         Serial.println(state);
         while (true);
     }
+    else {
+        Serial.println(F("success!"));
+    }
 
-#if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
-    //Set ANT Control pins
-    radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
-#endif
 
 #ifdef LILYGO_T3_S3_V1_0
     // T3 S3 V1.1 with PA Version Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
@@ -92,7 +88,6 @@ void setup()
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }
-
 
     // set carrier frequency to 2410.5 MHz
     if (radio.setFrequency(2400.0) == RADIOLIB_ERR_INVALID_FREQUENCY) {
@@ -149,6 +144,7 @@ void loop()
         // processing the data
         enableInterrupt = false;
 
+        payload = "T3-Epaper Hi #" + String(count++);
         // reset flag
         transmittedFlag = false;
 
@@ -160,12 +156,14 @@ void loop()
             //       it is not possible to automatically measure
             //       transmission data rate using getDataRate()
 
-            display.setRotation(1);
+            display.setRotation(3);
             display.fillScreen(GxEPD_WHITE);
             display.setTextColor(GxEPD_BLACK);
             display.setFont(&FreeMonoBold9pt7b);
             display.setCursor(0, 15);
             display.println("Transmitting: OK!");
+            display.setCursor(0, 35);
+            display.println(payload);
             display.update();
         } else {
             Serial.print(F("failed, code "));
@@ -173,7 +171,7 @@ void loop()
         }
 
         // wait a second before transmitting again
-        delay(2);
+        delay(200);
 
         // send another one
         Serial.print(F("[SX1280] Sending another packet ... "));
@@ -189,9 +187,8 @@ void loop()
         int state = radio.startTransmit(byteArr, 8);
         */
 
-        transmissionState = radio.startTransmit("Hello Word!");
+        transmissionState = radio.startTransmit(payload);
 
-        counter++;
         // we're ready to send more packets,
         // enable interrupt service routine
         enableInterrupt = true;

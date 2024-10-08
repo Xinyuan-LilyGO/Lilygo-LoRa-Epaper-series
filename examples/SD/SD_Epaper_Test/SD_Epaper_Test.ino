@@ -1,7 +1,7 @@
 
 /**
  * @file      SD_Epaper_Test.ino
- * @author    Puppy Liang (puppy0612@163.com)
+ * @author    Liang
  * @license   MIT
  * @copyright Copyright (c) 2024  Shenzhen Xin Yuan Electronic Technology Co., Ltd
  * @date      2024-04-01

@@ -22,10 +22,7 @@
 SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 // flag to indicate that a packet was received
-volatile bool receivedFlag = false;
-
-// disable interrupt when it's not needed
-volatile bool enableInterrupt = true;
+static volatile bool receivedFlag = false;
 
 // this function is called when a complete packet
 // is received by the module
@@ -33,48 +30,22 @@ volatile bool enableInterrupt = true;
 //            and MUST NOT have any arguments!
 void setFlag(void)
 {
-    // check if the interrupt is enabled
-    if (!enableInterrupt)
-    {
-        return;
-    }
-
     // we got a packet, set the flag
     receivedFlag = true;
 }
 
 void setup()
 {
+
     initBoard();
     Serial.println("[SX1262] Receive ");
     // When the power is turned on, a delay is required.
     delay(1500);
     // initialize SX1262 with default settings
     Serial.println(F("[SX1262] Initializing ... "));
-    int state = radio.begin(LoRa_frequency);
-    if (state == RADIOLIB_ERR_NONE)
-    {
-        radio.setBandwidth(Bandwidth);
-        radio.setOutputPower(OutputPower);
-        radio.setCurrentLimit(Currentlimit);
-        radio.setSpreadingFactor(SpreadingFactor);
+    int state = radio.begin();
 
-        Serial.print("LoRa_frequency : ");
-        Serial.println(LoRa_frequency);
-        Serial.print("Bandwidth : ");
-        Serial.println(Bandwidth);
-        Serial.print("OutputPower : ");
-        Serial.println(OutputPower);
-        Serial.print("Currentlimit : ");
-        Serial.println(Currentlimit);                
-        Serial.print("SpreadingFactor : ");
-        Serial.println(SpreadingFactor);   
-        Serial.println(F("success!"));
-    }
-    else
-    {
-        Serial.print(F("failed, code "));
-        Serial.println(state);
+    if (state != RADIOLIB_ERR_NONE) {
         display.setRotation(3);
         display.fillScreen(GxEPD_WHITE);
         display.setTextColor(GxEPD_BLACK);
@@ -82,12 +53,50 @@ void setup()
         display.setCursor(0, 15);
         display.println("Initializing: FAIL!");
         display.update();
+        Serial.print(F("failed, code "));
+        Serial.println(state);
         while (true);
+    }
+    else {
+        Serial.println(F("success!"));
     }
 
     // set the function that will be called
     // when new packet is received
     radio.setDio1Action(setFlag);
+
+        // set carrier frequency 
+    if (radio.setFrequency(LoRa_frequency) == RADIOLIB_ERR_INVALID_FREQUENCY) {
+        Serial.println(F("Selected frequency is invalid for this module!"));
+        while (true);
+    }
+
+    // set bandwidth 
+    if (radio.setBandwidth(Bandwidth) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+        Serial.println(F("Selected bandwidth is invalid for this module!"));
+        while (true);
+    }
+
+    // set spreading factor 
+    // SX1262 :  Allowed values range from 5 to 12.
+    if (radio.setSpreadingFactor(SpreadingFactor) == RADIOLIB_ERR_INVALID_SPREADING_FACTOR) {
+        Serial.println(F("Selected spreading factor is invalid for this module!"));
+        while (true);
+    }
+
+    // set coding rate 
+    // SX1262 : Allowed values range from 5 to 8. Only available in LoRa mode.
+    if (radio.setCodingRate(CodeRate) == RADIOLIB_ERR_INVALID_CODING_RATE) {
+        Serial.println(F("Selected coding rate is invalid for this module!"));
+        while (true);
+    }
+
+    // SX1262 :  Allowed values are in range from -9 to 22 dBm. This method is virtual to allow override from the SX1261 class.
+    if (radio.setOutputPower(OutputPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.println(F("Selected output power is invalid for this module!"));
+        while (true);
+    }
+
 
     // start listening for LoRa packets
     Serial.println(F("[SX1262] Starting to listen ... "));
@@ -100,18 +109,13 @@ void setup()
         display.setTextColor(GxEPD_BLACK);
         display.setFont(&FreeMonoBold9pt7b);
         display.setCursor(0, 15);
-        display.println("Initializing: FAIL!");
+        display.println("listening: FAIL!");
         display.update();
-    }
-    if (state == RADIOLIB_ERR_NONE)
-    {
-        Serial.println(F("success!"));
-    }
-    else
-    {
         Serial.print(F("failed, code "));
         Serial.println(state);
-        while (true);
+    }
+    else{
+        Serial.println(F("success!"));
     }
 
     // if needed, 'listen' mode can be disabled by calling
@@ -130,9 +134,6 @@ void loop()
     // check if the flag is set
     if (receivedFlag)
     {
-        // disable the interrupt service routine while
-        // processing the data
-        enableInterrupt = false;
 
         // reset flag
         receivedFlag = false;
@@ -202,8 +203,5 @@ void loop()
         // put module back to listen mode
         radio.startReceive();
 
-        // we're ready to receive more packets,
-        // enable interrupt service routine
-        enableInterrupt = true;
     }
 }

@@ -11,11 +11,12 @@
 * please open this note and change to the frequency you need to test
 * */
 
-#define LoRa_frequency      868.0
+#define LoRa_frequency      915.0
 #define Bandwidth           125
 #define OutputPower         22 
 #define Currentlimit        140
-#define SpreadingFactor     8
+#define SpreadingFactor     12
+#define CodeRate            6
 
 #if defined(LILYGO_S3_E_PAPER_V_1_0)
 

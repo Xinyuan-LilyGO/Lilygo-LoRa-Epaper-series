@@ -27,8 +27,8 @@
 #define RADIO_MISO_PIN          3
 #define RADIO_MOSI_PIN          6
 #define RADIO_CS_PIN            7
-#define RADIO_DIO1_PIN          33
-#define RADIO_BUSY_PIN          34
+#define RADIO_DIO1_PIN          9
+#define RADIO_BUSY_PIN          36
 #define RADIO_RST_PIN           8
 #define RADIO_POW_PIN           35
 
