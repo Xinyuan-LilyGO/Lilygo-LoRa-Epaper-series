@@ -120,14 +120,21 @@ void initBoard()
 
     EPD_init();
     
-    Serial.println("Scannig WiFi...");
-
     WIFI_test();
-
-#ifdef HAS_SDCARD
-
-    SD_test();
-    delay(1000);
+    #ifdef HAS_SDCARD
+        SD_test();
+        delay(1000);
+     #endif
     
-#endif
+    Serial.println("Board initialized.");
+    
+    display.setRotation(3);
+    display.fillScreen(GxEPD_WHITE);
+    display.setTextColor(GxEPD_BLACK);
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setCursor(0, 35);
+    display.println("LoRa Transmitter");
+    display.setCursor(0, 55);
+    display.println("Initializing...");
+    display.update();
 }
