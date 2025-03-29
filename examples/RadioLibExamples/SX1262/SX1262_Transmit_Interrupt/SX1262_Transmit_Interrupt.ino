@@ -1,6 +1,6 @@
 /*
     RadioLib SX1262 Transmit Example
-    This example transmits packets using SX1276 LoRa radio module.
+    This example transmits packets using SX1262 LoRa radio module.
     Each packet contains up to 256 bytes of data, in the form of:
     - Arduino String
     - null-terminated char array (C-string)
@@ -67,7 +67,7 @@ void setup()
         Serial.println(F("success!"));
     }
 
-        // set carrier frequency 
+    // set carrier frequency 
     if (radio.setFrequency(LoRa_frequency) == RADIOLIB_ERR_INVALID_FREQUENCY) {
         Serial.println(F("Selected frequency is invalid for this module!"));
         while (true);
@@ -98,9 +98,54 @@ void setup()
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }
+
+    // *** ADDED: CRITICAL SX1262 CONFIGURATIONS ***
+    
+    // set sync word - important for receiver/transmitter compatibility
+    Serial.println(F("[SX1262] Setting sync word ... "));
+    state = radio.setSyncWord(0xAB);
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.println(F("Unable to set sync word!"));
+        while (true);
+    }
+    
+    // set current limit for overcurrent protection
+    Serial.println(F("[SX1262] Setting current limit ... "));
+    state = radio.setCurrentLimit(140);
+    if (state == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
+        Serial.println(F("Selected current limit is invalid for this module!"));
+        while (true);
+    }
+    
+    // set preamble length for better transmission reliability
+    Serial.println(F("[SX1262] Setting preamble length ... "));
+    state = radio.setPreambleLength(16);
+    if (state == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
+        Serial.println(F("Selected preamble length is invalid for this module!"));
+        while (true);
+    }
+    
+    // set CRC configuration
+    Serial.println(F("[SX1262] Setting CRC ... "));
+    state = radio.setCRC(false);
+    if (state == RADIOLIB_ERR_INVALID_CRC_CONFIGURATION) {
+        Serial.println(F("Selected CRC is invalid for this module!"));
+        while (true);
+    }
+    
+    // DIO2 as RF switch - CRITICAL for SX1262 modules
+    // This is essential for the RF switch between RX and TX paths
+    Serial.println(F("[SX1262] Setting DIO2 as RF switch ... "));
+    state = radio.setDio2AsRfSwitch();
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.println(F("Failed to set DIO2 as RF switch!"));
+        while (true);
+    }
+    
     // set the function that will be called
     // when packet transmission is finished
-    radio.setDio1Action(setFlag);
+    // RadioLib 6.x API uses setPacketSentAction instead of setDio1Action
+    radio.setPacketSentAction(setFlag);
 
     // start transmitting the first packet
     Serial.print(F("[SX1262] Sending first packet ... "));
@@ -124,6 +169,10 @@ void loop()
 
         // reset flag
         transmittedFlag = false;
+
+        // IMPORTANT: RadioLib 6.x requires finishTransmit() call
+        // to clean up internal flags before next transmission
+        radio.finishTransmit();
 
         payload = "T3-Epaper Hi #" + String(count++);
 

@@ -1,4 +1,3 @@
-
 #pragma once
 
 /*
@@ -15,7 +14,7 @@
 #define Bandwidth           125
 #define OutputPower         22 
 #define Currentlimit        140
-#define SpreadingFactor     8
+#define SpreadingFactor     12
 #define CodeRate            6
 
 #if defined(LILYGO_S3_E_PAPER_V_1_0)
@@ -60,12 +59,3 @@
 #else
 #error "For the first use, please define the board version and model in <utilities. h>"
 #endif
-
-
-
-
-
-
-
-
-
