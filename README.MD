@@ -116,4 +116,21 @@ Select `maximum width and height` according to the size of the ink screen
 
 After opening the file, you need to delete the first six bits in the array and add a reference to it
 
-# 6️⃣FAQ
+## 6️⃣Arduino setting
+
+| Setting                  | Value                            |
+|--------------------------|----------------------------------|
+| Board                    | ESP32S3 Dev Module               |
+| Upload Speed             | 921600                           |
+| USB Mode                 | Hardware CDC and JTAG            |
+| USB CDC On Boot          | Enabled                          |
+| USB Firmware MSC On Boot | Disabled                         |
+| USB DFU On Boot          | Disabled                         |
+| CPU Frequency            | 240MHz (WiFi)                    |
+| Flash Mode               | QIO 80MHz                        |
+| Flash Size               | 4MB (32Mb)                       |
+| Core Debug Level         | None                             |
+| Partition Scheme         | Default 4MB with spiffs          |
+| PSRAM                    | OPI PSRAM                        |
+| Arduino Runs On          | Core 1                           |
+| Events Run On            | Core 1                           |
