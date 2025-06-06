@@ -97,6 +97,47 @@ void setup()
         while (true);
     }
 
+    // *** ADDED: CRITICAL SX1262 CONFIGURATIONS ***
+    
+    // set sync word
+    Serial.println(F("[SX1262] Setting sync word ... "));
+    state = radio.setSyncWord(0xAB);
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.println(F("Unable to set sync word!"));
+        while (true);
+    }
+    
+    // set current limit
+    Serial.println(F("[SX1262] Setting current limit ... "));
+    state = radio.setCurrentLimit(140);
+    if (state == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
+        Serial.println(F("Selected current limit is invalid for this module!"));
+        while (true);
+    }
+    
+    // set preamble length
+    Serial.println(F("[SX1262] Setting preamble length ... "));
+    state = radio.setPreambleLength(16);
+    if (state == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
+        Serial.println(F("Selected preamble length is invalid for this module!"));
+        while (true);
+    }
+    
+    // set CRC
+    Serial.println(F("[SX1262] Setting CRC ... "));
+    state = radio.setCRC(false);
+    if (state == RADIOLIB_ERR_INVALID_CRC_CONFIGURATION) {
+        Serial.println(F("Selected CRC is invalid for this module!"));
+        while (true);
+    }
+    
+    // DIO2 as RF switch - critical for SX1262 modules
+    Serial.println(F("[SX1262] Setting DIO2 as RF switch ... "));
+    state = radio.setDio2AsRfSwitch();
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.println(F("Failed to set DIO2 as RF switch!"));
+        while (true);
+    }
 
     // start listening for LoRa packets
     Serial.println(F("[SX1262] Starting to listen ... "));
