@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SI443X)
+#if !RADIOLIB_EXCLUDE_SI443X
 
 #include "../../Module.h"
 
@@ -128,19 +128,19 @@
 #define RADIOLIB_SI443X_IDLE                                    0b00000000  //  1     0                idle
 
 // RADIOLIB_SI443X_REG_INTERRUPT_STATUS_1
-#define RADIOLIB_SI443X_FIFO_LEVEL_ERROR_INTERRUPT              0b10000000  //  7     7   Tx/Rx FIFO overflow or underflow
-#define RADIOLIB_SI443X_TX_FIFO_ALMOST_FULL_INTERRUPT           0b01000000  //  6     6   Tx FIFO almost full
-#define RADIOLIB_SI443X_TX_FIFO_ALMOST_EMPTY_INTERRUPT          0b00100000  //  5     5   Tx FIFO almost empty
-#define RADIOLIB_SI443X_RX_FIFO_ALMOST_FULL_INTERRUPT           0b00010000  //  4     4   Rx FIFO almost full
-#define RADIOLIB_SI443X_EXTERNAL_INTERRUPT                      0b00001000  //  3     3   external interrupt occurred on GPIOx
-#define RADIOLIB_SI443X_PACKET_SENT_INTERRUPT                   0b00000100  //  2     2   packet transmission done
-#define RADIOLIB_SI443X_VALID_PACKET_RECEIVED_INTERRUPT         0b00000010  //  1     1   valid packet has been received
-#define RADIOLIB_SI443X_CRC_ERROR_INTERRUPT                     0b00000001  //  0     0   CRC failed
+#define RADIOLIB_SI443X_FIFO_LEVEL_ERROR_INTERRUPT              0b10000000 << 8  //  7     7   Tx/Rx FIFO overflow or underflow
+#define RADIOLIB_SI443X_TX_FIFO_ALMOST_FULL_INTERRUPT           0b01000000 << 8  //  6     6   Tx FIFO almost full
+#define RADIOLIB_SI443X_TX_FIFO_ALMOST_EMPTY_INTERRUPT          0b00100000 << 8  //  5     5   Tx FIFO almost empty
+#define RADIOLIB_SI443X_RX_FIFO_ALMOST_FULL_INTERRUPT           0b00010000 << 8  //  4     4   Rx FIFO almost full
+#define RADIOLIB_SI443X_EXTERNAL_INTERRUPT                      0b00001000 << 8  //  3     3   external interrupt occurred on GPIOx
+#define RADIOLIB_SI443X_PACKET_SENT_INTERRUPT                   0b00000100 << 8  //  2     2   packet transmission done
+#define RADIOLIB_SI443X_VALID_PACKET_RECEIVED_INTERRUPT         0b00000010 << 8  //  1     1   valid packet has been received
+#define RADIOLIB_SI443X_CRC_ERROR_INTERRUPT                     0b00000001 << 8  //  0     0   CRC failed
 
 // RADIOLIB_SI443X_REG_INTERRUPT_STATUS_2
 #define RADIOLIB_SI443X_SYNC_WORD_DETECTED_INTERRUPT            0b10000000  //  7     7   sync word has been detected
-#define RADIOLIB_SI443X_VALID_RADIOLIB_PREAMBLE_DETECTED_INTERRUPT      0b01000000  //  6     6   valid preamble has been detected
-#define RADIOLIB_SI443X_INVALID_RADIOLIB_PREAMBLE_DETECTED_INTERRUPT    0b00100000  //  5     5   invalid preamble has been detected
+#define RADIOLIB_SI443X_VALID_PREAMBLE_DETECTED_INTERRUPT       0b01000000  //  6     6   valid preamble has been detected
+#define RADIOLIB_SI443X_INVALID_PREAMBLE_DETECTED_INTERRUPT     0b00100000  //  5     5   invalid preamble has been detected
 #define RADIOLIB_SI443X_RSSI_INTERRUPT                          0b00010000  //  4     4   RSSI exceeded programmed threshold
 #define RADIOLIB_SI443X_WAKEUP_TIMER_INTERRUPT                  0b00001000  //  3     3   wake-up timer expired
 #define RADIOLIB_SI443X_LOW_BATTERY_INTERRUPT                   0b00000100  //  2     2   low battery detected
@@ -159,8 +159,8 @@
 
 // RADIOLIB_SI443X_REG_INTERRUPT_ENABLE_2
 #define RADIOLIB_SI443X_SYNC_WORD_DETECTED_ENABLED              0b10000000  //  7     7   sync word interrupt enabled
-#define RADIOLIB_SI443X_VALID_RADIOLIB_PREAMBLE_DETECTED_ENABLED        0b01000000  //  6     6   valid preamble interrupt enabled
-#define RADIOLIB_SI443X_INVALID_RADIOLIB_PREAMBLE_DETECTED_ENABLED      0b00100000  //  5     5   invalid preamble interrupt enabled
+#define RADIOLIB_SI443X_VALID_PREAMBLE_DETECTED_ENABLED         0b01000000  //  6     6   valid preamble interrupt enabled
+#define RADIOLIB_SI443X_INVALID_PREAMBLE_DETECTED_ENABLED       0b00100000  //  5     5   invalid preamble interrupt enabled
 #define RADIOLIB_SI443X_RSSI_ENABLED                            0b00010000  //  4     4   RSSI exceeded programmed threshold interrupt enabled
 #define RADIOLIB_SI443X_WAKEUP_TIMER_ENABLED                    0b00001000  //  3     3   wake-up timer interrupt enabled
 #define RADIOLIB_SI443X_LOW_BATTERY_ENABLED                     0b00000100  //  2     2   low battery interrupt enabled
@@ -564,9 +564,7 @@ class Si443x: public PhysicalLayer {
       \brief Default constructor.
       \param mod Instance of Module that will be used to communicate with the radio.
     */
-    Si443x(Module* mod);
-
-    Module* getMod();
+    explicit Si443x(Module* mod);
 
     // basic methods
 
@@ -593,23 +591,25 @@ class Si443x: public PhysicalLayer {
       \param addr Node address to transmit the packet to.
       \returns \ref status_codes
     */
-    int16_t transmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t transmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Binary receive method. Will attempt to receive arbitrary binary data up to 64 bytes long.
       For overloads to receive Arduino String, see PhysicalLayer::receive.
       \param data Pointer to array to save the received binary data.
       \param len Number of bytes that will be received. Must be known in advance for binary transmissions.
+      \param timeout Reception timeout in milliseconds. If set to 0,
+      timeout period will be calculated automatically based on the radio configuration.
       \returns \ref status_codes
     */
-    int16_t receive(uint8_t* data, size_t len) override;
+    int16_t receive(uint8_t* data, size_t len, RadioLibTime_t timeout = 0) override;
 
     /*!
       \brief Sets the module to sleep to save power. %Module will not be able to transmit or receive any data while in sleep mode.
       %Module will wake up automatically when methods like transmit or receive are called.
       \returns \ref status_codes
     */
-    int16_t sleep();
+    int16_t sleep() override;
 
     /*!
       \brief Sets the module to standby (with XTAL on).
@@ -657,13 +657,35 @@ class Si443x: public PhysicalLayer {
     void clearIrqAction();
 
     /*!
+      \brief Sets interrupt service routine to call when a packet is received.
+      \param func ISR to call.
+    */
+    void setPacketReceivedAction(void (*func)(void)) override;
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is received.
+    */
+    void clearPacketReceivedAction() override;
+
+    /*!
+      \brief Sets interrupt service routine to call when a packet is sent.
+      \param func ISR to call.
+    */
+    void setPacketSentAction(void (*func)(void)) override;
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is sent.
+    */
+    void clearPacketSentAction() override;
+
+    /*!
       \brief Interrupt-driven binary transmit method. Will start transmitting arbitrary binary data up to 64 bytes long.
       \param data Binary data that will be transmitted.
       \param len Length of binary data to transmit (in bytes).
       \param addr Node address to transmit the packet to.
       \returns \ref status_codes
     */
-    int16_t startTransmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t startTransmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Clean up after transmission is done.
@@ -675,7 +697,7 @@ class Si443x: public PhysicalLayer {
       \brief Interrupt-driven receive method. IRQ will be activated when full valid packet is received.
       \returns \ref status_codes
     */
-    int16_t startReceive();
+    int16_t startReceive() override;
 
     /*!
       \brief Interrupt-driven receive method, implemented for compatibility with PhysicalLayer.
@@ -685,16 +707,23 @@ class Si443x: public PhysicalLayer {
       \param len Ignored.
       \returns \ref status_codes
     */
-    int16_t startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len);
+    int16_t startReceive(uint32_t timeout, uint32_t irqFlags, uint32_t irqMask, size_t len) override;
 
     /*!
-      \brief Reads data that was received after calling startReceive method. This method reads len characters.
+      \brief Reads data that was received after calling startReceive method. When the packet length is not known in advance,
+      getPacketLength method must be called BEFORE calling readData!
       \param data Pointer to array to save the received binary data.
-      \param len Number of bytes that will be read. When set to 0, the packet length will be retreived automatically.
+      \param len Number of bytes that will be read. When set to 0, the packet length will be retrieved automatically.
       When more bytes than received are requested, only the number of bytes requested will be returned.
       \returns \ref status_codes
     */
     int16_t readData(uint8_t* data, size_t len) override;
+
+    /*!
+      \brief Clean up after reception is done.
+      \returns \ref status_codes
+    */
+    int16_t finishReceive() override;
 
     // configuration methods
 
@@ -703,7 +732,7 @@ class Si443x: public PhysicalLayer {
       \param br Bit rate to be set (in kbps).
       \returns \ref status_codes
     */
-    int16_t setBitRate(float br);
+    int16_t setBitRate(float br) override;
 
     /*!
       \brief Sets FSK frequency deviation from carrier frequency. Allowed values range from 0.625 to 320.0 kHz.
@@ -724,14 +753,14 @@ class Si443x: public PhysicalLayer {
       \param syncWord Pointer to the array of sync word bytes.
       \param len Sync word length in bytes.
     */
-    int16_t setSyncWord(uint8_t* syncWord, size_t len);
+    int16_t setSyncWord(uint8_t* syncWord, size_t len) override;
 
     /*!
       \brief Sets preamble length.
       \param preambleLen Preamble length to be set (in bits).
       \returns \ref status_codes
     */
-    int16_t setPreambleLength(uint8_t preambleLen);
+    int16_t setPreambleLength(size_t preambleLen) override;
 
      /*!
       \brief Query modem for the packet length of received payload.
@@ -766,7 +795,7 @@ class Si443x: public PhysicalLayer {
      \brief Get one truly random byte from RSSI noise.
      \returns TRNG byte.
    */
-    uint8_t randomByte();
+    uint8_t randomByte() override;
 
     /*!
      \brief Read version SPI register. Should return RADIOLIB_SI443X_DEVICE_VERSION (0x06) if Si443x is connected and working.
@@ -774,42 +803,69 @@ class Si443x: public PhysicalLayer {
    */
     int16_t getChipVersion();
 
-    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     /*!
-      \brief Set interrupt service routine function to call when data bit is receveid in direct mode.
+      \brief Set interrupt service routine function to call when data bit is received in direct mode.
       \param func Pointer to interrupt service routine.
     */
-    void setDirectAction(void (*func)(void));
+    void setDirectAction(void (*func)(void)) override;
 
     /*!
       \brief Function to read and process data bit in direct reception mode.
       \param pin Pin on which to read.
     */
-    void readBit(uint32_t pin);
+    void readBit(uint32_t pin) override;
     #endif
 
     /*!
-     \brief Set modem in fixed packet length mode.
-     \param len Packet length.
-     \returns \ref status_codes
-   */
-   int16_t fixedPacketLengthMode(uint8_t len = RADIOLIB_SI443X_MAX_PACKET_LENGTH);
+      \brief Set modem in fixed packet length mode.
+      \param len Packet length.
+      \returns \ref status_codes
+    */
+    int16_t fixedPacketLengthMode(uint8_t len = RADIOLIB_SI443X_MAX_PACKET_LENGTH);
 
     /*!
-     \brief Set modem in variable packet length mode.
-     \param maxLen Maximum packet length.
+      \brief Set modem in variable packet length mode.
+      \param maxLen Maximum packet length.
      \returns \ref status_codes
-   */
-   int16_t variablePacketLengthMode(uint8_t maxLen = RADIOLIB_SI443X_MAX_PACKET_LENGTH);
+    */
+    int16_t variablePacketLengthMode(uint8_t maxLen = RADIOLIB_SI443X_MAX_PACKET_LENGTH);
 
-#if !defined(RADIOLIB_GODMODE) && !defined(RADIOLIB_LOW_LEVEL)
+    /*!
+      \brief Read currently active IRQ flags.
+      \returns IRQ flags.
+    */
+    uint32_t getIrqFlags() override;
+
+    /*!
+      \brief Clear interrupt on a specific IRQ bit (e.g. RxTimeout, CadDone).
+      \param irq Module-specific IRQ flags.
+      \returns \ref status_codes
+    */
+    int16_t clearIrqFlags(uint32_t irq) override;
+
+    /*!
+      \brief Enables/disables CRC of transmitted or received packets.
+      \param enable Enable (true) or disable (false) CRC.
+      \param mode Set CRC mode
+      \returns \ref status_codes
+    */
+    int16_t setCRC(bool enable, bool mode = false);
+
+#if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
+#endif
+    Module* getMod() override;
+
+#if !RADIOLIB_GODMODE
+  protected:
+#endif
+    int16_t setFrequencyRaw(float newFreq);
+
+#if !RADIOLIB_GODMODE
+  private:
 #endif
     Module* mod;
-
-#if !defined(RADIOLIB_GODMODE)
-  protected:
-#endif
 
     float bitRate = 0;
     float frequencyDev = 0;
@@ -818,19 +874,15 @@ class Si443x: public PhysicalLayer {
     size_t packetLength = 0;
     bool packetLengthQueried = false;
     uint8_t packetLengthConfig = RADIOLIB_SI443X_FIXED_PACKET_LENGTH_ON;
+    bool crcEnabled = false;
 
-    int16_t setFrequencyRaw(float newFreq);
-    int16_t setPacketMode(uint8_t mode, uint8_t len);
-
-#if !defined(RADIOLIB_GODMODE)
-  private:
-#endif
     bool findChip();
-    void clearIRQFlags();
+    void clearIrqStatus();
     void clearFIFO(size_t count);
     int16_t config();
     int16_t updateClockRecovery();
     int16_t directMode();
+    int16_t setPacketMode(uint8_t mode, uint8_t len);
 };
 
 #endif

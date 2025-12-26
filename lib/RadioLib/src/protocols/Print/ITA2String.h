@@ -27,13 +27,25 @@ class ITA2String {
       \brief Default single-character constructor.
       \param c ASCII-encoded character to encode as ITA2.
     */
-    ITA2String(char c);
+    explicit ITA2String(char c);
 
     /*!
       \brief Default string constructor.
       \param str ASCII-encoded string to encode as ITA2.
     */
-    ITA2String(const char* str);
+    explicit ITA2String(const char* str);
+
+    /*!
+      \brief Copy constructor.
+      \param ita2 ITA2String instance to copy.
+    */
+    ITA2String(const ITA2String& ita2);
+    
+    /*!
+      \brief Overload for assignment operator.
+      \param ita2 rvalue ITA2String.
+    */
+    ITA2String& operator=(const ITA2String& ita2);
 
     /*!
       \brief Default destructor.
@@ -53,10 +65,10 @@ class ITA2String {
     */
     uint8_t* byteArr();
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
-    #if defined(RADIOLIB_STATIC_ONLY)
+    #if RADIOLIB_STATIC_ONLY
       char strAscii[RADIOLIB_STATIC_ARRAY_SIZE];
     #else
       char* strAscii;

@@ -1,7 +1,7 @@
 #include "BellModem.h"
-#if !defined(RADIOLIB_EXCLUDE_BELL)
+#if !RADIOLIB_EXCLUDE_BELL
 
-const struct BellModem_t Bell101 {
+const BellModem_t Bell101 = {
   .freqMark = 1270,
   .freqSpace = 1070,
   .baudRate = 110,
@@ -9,7 +9,7 @@ const struct BellModem_t Bell101 {
   .freqSpaceReply = 2025,
 };
 
-const struct BellModem_t Bell103 {
+const BellModem_t Bell103 = {
   .freqMark = 1270,
   .freqSpace = 1070,
   .baudRate = 300,
@@ -17,7 +17,7 @@ const struct BellModem_t Bell103 {
   .freqSpaceReply = 2025,
 };
 
-const struct BellModem_t Bell202 {
+const BellModem_t Bell202 = {
   .freqMark = 1200,
   .freqSpace = 2200,
   .baudRate = 1200,
@@ -43,7 +43,7 @@ int16_t BellClient::begin(const BellModem_t& modem) {
 
 int16_t BellClient::setModem(const BellModem_t& modem) {
   this->modemType = modem;
-  this->toneLen = (1000000.0/(float)this->modemType.baudRate)*this->correction;
+  this->toneLen = (1000000.0f/(float)this->modemType.baudRate)*this->correction;
   return(RADIOLIB_ERR_NONE);
 }
 
@@ -58,7 +58,7 @@ size_t BellClient::write(uint8_t b) {
   uint16_t toneSpace = this->modemType.freqSpace;
   if(this->reply) {
     toneMark = this->modemType.freqMarkReply;
-    toneMark = this->modemType.freqSpaceReply;
+    toneSpace = this->modemType.freqSpaceReply;
   }
 
   // get the Module pointer to access HAL
@@ -70,7 +70,7 @@ size_t BellClient::write(uint8_t b) {
 
   // iterate over the bits and set correct frequencies
   for(uint16_t mask = 0x80; mask >= 0x01; mask >>= 1) {
-    uint32_t start = mod->hal->micros();
+    RadioLibTime_t start = mod->hal->micros();
     if(b & mask) {
       this->tone(toneMark, false);
     } else {

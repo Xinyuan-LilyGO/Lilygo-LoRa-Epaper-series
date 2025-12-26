@@ -1,5 +1,5 @@
 #include "SX1279.h"
-#if !defined(RADIOLIB_EXCLUDE_SX127X)
+#if !RADIOLIB_EXCLUDE_SX127X
 
 SX1279::SX1279(Module* mod) : SX1278(mod) {
 
@@ -7,7 +7,8 @@ SX1279::SX1279(Module* mod) : SX1278(mod) {
 
 int16_t SX1279::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, int8_t power, uint16_t preambleLength, uint8_t gain) {
   // execute common part
-  int16_t state = SX127x::begin(RADIOLIB_SX1278_CHIP_VERSION, syncWord, preambleLength);
+  const uint8_t versions[] = { RADIOLIB_SX1278_CHIP_VERSION, RADIOLIB_SX1278_CHIP_VERSION_ALT, RADIOLIB_SX1278_CHIP_VERSION_RFM9X };
+  int16_t state = SX127x::begin(versions, 3, syncWord, preambleLength);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -38,7 +39,8 @@ int16_t SX1279::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t sync
 
 int16_t SX1279::beginFSK(float freq, float br, float freqDev, float rxBw, int8_t power, uint16_t preambleLength, bool enableOOK) {
   // execute common part
-  int16_t state = SX127x::beginFSK(RADIOLIB_SX1278_CHIP_VERSION, freqDev, rxBw, preambleLength, enableOOK);
+  const uint8_t versions[] = { RADIOLIB_SX1278_CHIP_VERSION, RADIOLIB_SX1278_CHIP_VERSION_ALT, RADIOLIB_SX1278_CHIP_VERSION_RFM9X };
+  int16_t state = SX127x::beginFSK(versions, 3, freqDev, rxBw, preambleLength, enableOOK);
   RADIOLIB_ASSERT(state);
 
   // configure settings not accessible by API
@@ -67,7 +69,7 @@ int16_t SX1279::beginFSK(float freq, float br, float freqDev, float rxBw, int8_t
 }
 
 int16_t SX1279::setFrequency(float freq) {
-  RADIOLIB_CHECK_RANGE(freq, 137.0, 960.0, RADIOLIB_ERR_INVALID_FREQUENCY);
+  RADIOLIB_CHECK_RANGE(freq, 137.0f, 960.0f, RADIOLIB_ERR_INVALID_FREQUENCY);
 
   // set frequency and if successful, save the new setting
   int16_t state = SX127x::setFrequencyRaw(freq);
@@ -75,6 +77,19 @@ int16_t SX1279::setFrequency(float freq) {
     SX127x::frequency = freq;
   }
   return(state);
+}
+
+int16_t SX1279::setModem(ModemType_t modem) {
+  switch(modem) {
+    case(ModemType_t::RADIOLIB_MODEM_LORA): {
+      return(this->begin());
+    } break;
+    case(ModemType_t::RADIOLIB_MODEM_FSK): {
+      return(this->beginFSK());
+    } break;
+    default:
+      return(RADIOLIB_ERR_WRONG_MODEM);
+  }
 }
 
 #endif

@@ -1,17 +1,17 @@
 /*
-   RadioLib Si443x Receive with Interrupts Example
+  RadioLib Si443x Receive with Interrupts Example
 
-   This example listens for FSK transmissions and tries to
-   receive them. Once a packet is received, an interrupt is
-   triggered.
+  This example listens for FSK transmissions and tries to
+  receive them. Once a packet is received, an interrupt is
+  triggered.
 
-   Other modules from Si443x/RFM2x family can also be used.
+  Other modules from Si443x/RFM2x family can also be used.
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#si443xrfm2x
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#si443xrfm2x
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -23,48 +23,13 @@
 // SDN pin:   9
 Si4432 radio = new Module(10, 2, 9);
 
-// or using RadioShield
-// https://github.com/jgromes/RadioShield
-//Si4432 radio = RadioShield.ModuleA;
-
-void setup() {
-  Serial.begin(9600);
-
-  // initialize Si4432 with default settings
-  Serial.print(F("[Si4432] Initializing ... "));
-  int state = radio.begin();
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
-  } else {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while (true);
-  }
-
-  // set the function that will be called
-  // when new packet is received
-  radio.setIrqAction(setFlag);
-
-  // start listening for packets
-  Serial.print(F("[Si4432] Starting to listen ... "));
-  state = radio.startReceive();
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
-  } else {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while (true);
-  }
-
-  // if needed, 'listen' mode can be disabled by calling
-  // any of the following methods:
-  //
-  // radio.standby()
-  // radio.sleep()
-  // radio.transmit();
-  // radio.receive();
-  // radio.readData();
-}
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio = new RadioModule();
+*/
 
 // flag to indicate that a packet was received
 volatile bool receivedFlag = false;
@@ -81,6 +46,45 @@ void setFlag(void) {
   receivedFlag = true;
 }
 
+void setup() {
+  Serial.begin(9600);
+
+  // initialize Si4432 with default settings
+  Serial.print(F("[Si4432] Initializing ... "));
+  int state = radio.begin();
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+
+  // set the function that will be called
+  // when new packet is received
+  radio.setPacketReceivedAction(setFlag);
+
+  // start listening for packets
+  Serial.print(F("[Si4432] Starting to listen ... "));
+  state = radio.startReceive();
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+
+  // if needed, 'listen' mode can be disabled by calling
+  // any of the following methods:
+  //
+  // radio.standby()
+  // radio.sleep()
+  // radio.transmit();
+  // radio.receive();
+  // radio.readData();
+}
+
 void loop() {
   // check if the flag is set
   if(receivedFlag) {
@@ -94,7 +98,8 @@ void loop() {
     // you can also read received data as byte array
     /*
       byte byteArr[8];
-      int state = radio.readData(byteArr, 8);
+      int numBytes = radio.getPacketLength();
+      int state = radio.readData(byteArr, numBytes);
     */
 
     if (state == RADIOLIB_ERR_NONE) {

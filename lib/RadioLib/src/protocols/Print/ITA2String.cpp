@@ -4,7 +4,7 @@
 
 ITA2String::ITA2String(char c) {
   asciiLen = 1;
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
   strAscii = new char[1];
   #endif
   strAscii[0] = c;
@@ -13,15 +13,36 @@ ITA2String::ITA2String(char c) {
 
 ITA2String::ITA2String(const char* str) {
   asciiLen = strlen(str);
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
   strAscii = new char[asciiLen + 1];
   #endif
   strcpy(strAscii, str);
   ita2Len = 0;
 }
 
+ITA2String::ITA2String(const ITA2String& ita2) {
+  this->asciiLen = ita2.asciiLen;
+  this->ita2Len = ita2.ita2Len;
+  #if !RADIOLIB_STATIC_ONLY
+  this->strAscii = new char[asciiLen + 1];
+  #endif
+  strcpy(this->strAscii, ita2.strAscii);
+}
+
+ITA2String& ITA2String::operator=(const ITA2String& ita2) {
+  if(&ita2 != this) {
+    this->asciiLen = ita2.asciiLen;
+    this->ita2Len = ita2.ita2Len;
+    #if !RADIOLIB_STATIC_ONLY
+    this->strAscii = new char[asciiLen + 1];
+    #endif
+    strcpy(this->strAscii, ita2.strAscii);
+  }
+  return(*this);
+}
+
 ITA2String::~ITA2String() {
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     delete[] strAscii;
   #endif
 }
@@ -40,12 +61,15 @@ size_t ITA2String::length() {
 
 uint8_t* ITA2String::byteArr() {
   // create temporary array 2x the string length (figures may be 3 bytes)
-  #if defined(RADIOLIB_STATIC_ONLY)
+  #if RADIOLIB_STATIC_ONLY
     uint8_t temp[RADIOLIB_STATIC_ARRAY_SIZE*2 + 1];
   #else
     uint8_t* temp = new uint8_t[asciiLen*2 + 1];
   #endif
 
+  // ensure the minimum possible array size is always initialized
+  temp[0] = 0;
+  
   size_t arrayLen = 0;
   bool flagFigure = false;
   for(size_t i = 0; i < asciiLen; i++) {
@@ -87,7 +111,7 @@ uint8_t* ITA2String::byteArr() {
 
   uint8_t* arr = new uint8_t[arrayLen];
   memcpy(arr, temp, arrayLen);
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     delete[] temp;
   #endif
 
@@ -98,11 +122,15 @@ uint16_t ITA2String::getBits(char c) {
   // search ITA2 table
   uint16_t code = 0x0000;
   for(uint8_t i = 0; i < RADIOLIB_ITA2_LENGTH; i++) {
-    if(RADIOLIB_NONVOLATILE_READ_BYTE(&ITA2Table[i][0]) == c) {
+    char* ptr = const_cast<char*>(&ITA2Table[i][0]);
+    if(RADIOLIB_NONVOLATILE_READ_BYTE(ptr) == c) {
       // character is in letter shift
       code = (RADIOLIB_ITA2_LTRS << 5) | i;
       break;
-    } else if(RADIOLIB_NONVOLATILE_READ_BYTE(&ITA2Table[i][1]) == c) {
+    }
+    
+    ptr = const_cast<char*>(&ITA2Table[i][1]);
+    if(RADIOLIB_NONVOLATILE_READ_BYTE(ptr) == c) {
       // character is in figures shift
       code = (RADIOLIB_ITA2_FIGS << 5) | i;
       break;

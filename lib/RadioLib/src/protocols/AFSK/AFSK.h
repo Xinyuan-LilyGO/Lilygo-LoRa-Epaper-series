@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_AFSK)
+#if !RADIOLIB_EXCLUDE_AFSK
 
 #include "../../Module.h"
 
@@ -26,7 +26,7 @@ class AFSKClient  {
       \brief Copy contructor.
       \param aud Pointer to the AFSKClient instance to copy.
     */
-    AFSKClient(AFSKClient* aud);
+    explicit AFSKClient(AFSKClient* aud);
 
     /*!
       \brief Initialization method.
@@ -44,12 +44,12 @@ class AFSKClient  {
 
     /*!
       \brief Stops transmitting audio tone.
-      \param freq Keep transmitter on - this may limit noise when switching transmitter on or off.
+      \param keepOn Keep transmitter on - this may limit noise when switching transmitter on or off.
       \returns \ref status_codes
     */
     int16_t noTone(bool keepOn = false);
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     PhysicalLayer* phyLayer;

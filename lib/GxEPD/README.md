@@ -1,4 +1,3 @@
-=======
 # GxEPD
 A simple E-Paper display library with common base class and separate IO class for Arduino.
 
@@ -33,48 +32,47 @@ A simple E-Paper display library with common base class and separate IO class fo
 ### Supporting Arduino Forum Topics:
 
 - Waveshare e-paper displays with SPI: http://forum.arduino.cc/index.php?topic=487007.0
-- Good Dispay ePaper for Arduino : https://forum.arduino.cc/index.php?topic=436411.0
+- Good Display ePaper for Arduino : https://forum.arduino.cc/index.php?topic=436411.0
 
 ### Supported SPI e-paper panels from Good Display:
-- GxGDEW0102I4F     1.02"  b/w  `only can be updated globally`
-- GDEP015OC1        1.54"  b/w   200x200
-- GDEH0154D67       1.54"  b/w   200x200 replacement for GDEP015OC1
-- GDEW0154Z04       1.54"  b/w/r 200x200
-- GDEW0154Z17       1.54"  b/w/r 152x152
-- DEPG0150BN        1.54"  b/w   200x200
-- GDE0213B1         2.13"  b/w
-- GDEH0213B72       2.13"  b/w,  replacement for GDE0213B1
-- GDEH0213B73       2.13"  b/w,  new replacement for GDE0213B1, GDEH0213B72
-- GDEM0213B74       2.13"  b/w,  4-Color/Grayscale not achieved 
-- GDEW0213I5F       2.13"  b/w   flexible
-- GDEW0213Z16       2.13"  b/w/r
-- DEPG0213BN        2.13"  b/w
-- GDEH029A1         2.9"   b/w
-- GDEW029T5         2.9"   b/w
-- QYEG0290BN        2.9"   b/w
-- GDEW029Z10        2.9"   b/w/r
-- GDEW026T0         2.6"   b/w
-- GDEW027C44        2.7"   b/w/r
-- GDEW027W3         2.7"   b/w
-- GDEW0371W7        3.7"   b/w
-- GDEW042T2         4.2"   b/w
-- GDEW042Z15        4.2"   b/w/r
-- GDEW0583T7        5.83"  b/w
-- GDEW075T8         7.5"   b/w
-- GDEW075T7         7.5"   b/w    800x480
-- GDEW075Z09        7.5"   b/w/r
-- GDEW075Z08        7.5"   b/w/r  800x480
-
-### Supported SPI e-paper panels from DKE GROUP:
-- DEPG0150BN        1.54"  b/w    200x200
-- DEPG0266BN        2.66"  b/w    152x296
-- DEPG0213BN        2.13"  b/w    128x250
-- DEPG0290B         2.9"   b/w    128x296
-- DEPG0290R         2.9"   b/w/r  128x296
-- DEPG0750BN        7.5"   b/w    800x480
-
-
-
+- DEPG0150BN     1.50" b/w 200x200, e.g. LILYGO® TTGO T5 V2.4.1 1.50 inch
+- GDEP015OC1     1.54" b/w 200x200
+- GDEH0154D67    1.54" b/w 200x200 replacement for GDEP015OC1
+- GDEW0154T8     1.54" b/w 152x152 UC8151
+- GDEW0154M09    1.54" b/w 200x200 JD79653A
+- GDEW0154M10    1.54" b/w 152x152 UC8151D
+- GDEW0154Z04    1.54" b/w/r 200x200
+- GDEW0154Z17    1.54" b/w/r 152x152
+- GDEH0154Z90    1.54" b/w/r 200x200 SSD1681
+- GDE0213B1      2.13" b/w
+- GDEH0213B72    2.13" b/w, replacement for GDE0213B1
+- GDEH0213B73    2.13" b/w, new replacement for GDE0213B1, GDEH0213B72
+- GDEM0213B74    2.13" b/w 128x250 SSD1680
+- GDEW0213I5F    2.13" b/w flexible
+- GDEW0213T5D    2.13" b/w 128x296, UC8151 (IL0373)
+- GDEW0213Z16    2.13" b/w/r
+- GDEW0213Z19    2.13" b/w/r 104x212, UC8151D
+- DEPG0213BN     2.13" b/w 128x250, e.g. LILYGO® TTGO T5 V2.3.1 2.13 inch
+- GDEH029A1      2.9" b/w
+- GDEW029T5      2.9" b/w
+- GDEW029T5D     2.9" b/w
+- GDEM029T94     2.9" b/w
+- GDEW029Z10     2.9" b/w/r
+- GDEH029Z13     2.9" b/w/r 128x296, UC8151D
+- DEPG0290BS     2.9" b/w 128x296, e.g. LILYGO® TTGO T5 V2.4.1 2.9"
+- GDEW026T0      2.6" b/w
+- DEPG0266BN     2.66" b/w 152x296, e.g. LILYGO® TTGO T5 2.66 inch
+- GDEW027C44     2.7" b/w/r
+- GDEW027W3      2.7" b/w
+- GDEY027T91     2.7" b/w 176x264, SSD1680
+- GDEW0371W7     3.7" b/w
+- GDEW042T2      4.2" b/w
+- GDEW042Z15     4.2" b/w/r
+- GDEW0583T7     5.83" b/w
+- GDEW075T8      7.5" b/w
+- GDEW075T7      7.5" b/w 800x480
+- GDEW075Z09     7.5" b/w/r
+- GDEW075Z08     7.5" b/w/r 800x480
 #### Supported SPI e-paper panels & boards from Waveshare: compare with Good Display, same panel
 
 ### I can and will only support e-paper panels I have!
@@ -83,7 +81,29 @@ A simple E-Paper display library with common base class and separate IO class fo
 
 ### for pin mapping suggestions see ConnectingHardware.md
 
-### Version 3.1.0
+### Version 3.1.3
+- added support for GDEW0154T8  1.54" b/w 152x152 UC8151
+- added support for GDEW0154M09 1.54" b/w 200x200 JD79653A
+- added support for GDEW0154M10 1.54" b/w 152x152 UC8151D
+- added support for GDEH0154Z90 1.54" b/w/r 200x200 SSD1681
+- added support for GDEM0213B74 2.13" b/w 128x250 SSD1680
+- fixed methods updateWindow, updateToWindow, _rotate in all driver classes
+#### Version 3.1.2
+- added support for DEPG0150BN 1.50" b/w 200x200, e.g. LILYGO® TTGO T5 V2.4.1 1.50 inch
+- added support for DEPG0213BN 2.13" b/w 128x250, e.g. LILYGO® TTGO T5 V2.3.1 2.13 inch
+- added support for DEPG0266BN 2.66" b/w 152x296, e.g. LILYGO® TTGO T5 2.66 inch
+- added support for DEPG0290BS 2.9"  b/w 128x296, e.g. LILYGO® TTGO T5 V2.4.1 2.9"
+- added support for GDEW0213T5D 2.13" b/w 128x296, UC8151 (IL0373)
+- added support for GDEW0213Z19 2.13" b/w/r 104x212, UC8151D
+- added support for GDEW029T5D 2.9" b/w 128x296, UC8151D
+- added support for GDEH029Z13 2.9" b/w/r 128x296, UC8151D
+- added support for GDEY027T91 2.7" b/w 176x264, SSD1680
+- updated certificate and fingerprint for GitHub download in GxEPD_WiFi_Example
+- added example GxEPD_HelloWorld.ino
+#### Version 3.1.1
+- added support for GDEM029T94 2.9" b/w, actual Waveshare 2.9" b/w
+- updated example GxEPD_WiFi_Example, for actual GitHub certificate
+#### Version 3.1.0
 - added support for GDEH0154D67 1.54" b/w, replacement for GDEP015OC1
 - added example GxEPD_MinimumExample, e.g. for memory footprint
 #### Version 3.0.9
@@ -177,4 +197,3 @@ A simple E-Paper display library with common base class and separate IO class fo
 #### Version 2.3.5
 - GxFont_GFX : Font Rendering Graphics Switch and Bridge Class
 
->>>>>>> github/master

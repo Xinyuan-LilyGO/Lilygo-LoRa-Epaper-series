@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SI443X)
+#if !RADIOLIB_EXCLUDE_SI443X
 
 #include "../../Module.h"
 #include "Si443x.h"
@@ -21,7 +21,7 @@ class Si4432: public Si443x {
       \brief Default constructor.
       \param mod Instance of Module that will be used to communicate with the radio chip.
     */
-    Si4432(Module* mod);
+    Si4432(Module* mod); // cppcheck-suppress noExplicitConstructor
 
     // basic methods
 
@@ -35,7 +35,7 @@ class Si4432: public Si443x {
       \param preambleLen Preamble Length in bits. Defaults to 16 bits.
       \returns \ref status_codes
     */
-    int16_t begin(float freq = 434.0, float br = 4.8, float freqDev = 5.0, float rxBw = 181.1, int8_t power = 10, uint8_t preambleLen = 16);
+    virtual int16_t begin(float freq = 434.0, float br = 4.8, float freqDev = 5.0, float rxBw = 181.1, int8_t power = 10, uint8_t preambleLen = 16);
 
     // configuration methods
 
@@ -44,20 +44,20 @@ class Si4432: public Si443x {
       \param freq Carrier frequency to be set in MHz.
       \returns \ref status_codes
     */
-    int16_t setFrequency(float freq);
+    int16_t setFrequency(float freq) override;
 
     /*!
       \brief Sets output power. Allowed values range from -1 to 20 dBm in 3 dBm steps.
       \param power Output power to be set in dBm.
       \returns \ref status_codes
     */
-    int16_t setOutputPower(int8_t power);
+    int16_t setOutputPower(int8_t power) override;
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   protected:
 #endif
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
 };

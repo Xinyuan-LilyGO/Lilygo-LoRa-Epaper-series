@@ -17,22 +17,22 @@
 #define RADIOLIB_SHAPING_NONE                                   (0x00)
 
 /*!
-  \brief Gaussin shaping filter, BT = 0.3
+  \brief Gaussian shaping filter, BT = 0.3
 */
 #define RADIOLIB_SHAPING_0_3                                    (0x01)
 
 /*!
-  \brief Gaussin shaping filter, BT = 0.5
+  \brief Gaussian shaping filter, BT = 0.5
 */
 #define RADIOLIB_SHAPING_0_5                                    (0x02)
 
 /*!
-  \brief Gaussin shaping filter, BT = 0.7
+  \brief Gaussian shaping filter, BT = 0.7
 */
 #define RADIOLIB_SHAPING_0_7                                    (0x03)
 
 /*!
-  \brief Gaussin shaping filter, BT = 1.0
+  \brief Gaussian shaping filter, BT = 1.0
 */
 #define RADIOLIB_SHAPING_1_0                                    (0x04)
 
@@ -250,6 +250,16 @@
 */
 #define RADIOLIB_ERR_NULL_POINTER                              (-28)
 
+/*!
+  \brief The requested IRQ configuration is not valid for this module.
+*/
+#define RADIOLIB_ERR_INVALID_IRQ                               (-29)
+
+/*!
+  \brief Packet supplied to transmission method was shorter than required.
+*/
+#define RADIOLIB_ERR_PACKET_TOO_SHORT                          (-30)
+
 // RF69-specific status codes
 
 /*!
@@ -292,6 +302,11 @@
 */
 #define RADIOLIB_ERR_INVALID_OOK_RSSI_PEAK_TYPE                (-108)
 
+/*!
+  \brief Supplied Bitrate tolerance value is out of Range.
+*/
+#define RADIOLIB_ERR_INVALID_BIT_RATE_TOLERANCE_VALUE          (-109)
+
 // APRS status codes
 
 /*!
@@ -310,7 +325,7 @@
 #define RADIOLIB_ERR_INVALID_MIC_E_TELEMETRY_LENGTH            (-203)
 
 /*!
-  \brief Mic-E message cannot contaion both telemetry and status text.
+  \brief Mic-E message cannot contain both telemetry and status text.
 */
 #define RADIOLIB_ERR_MIC_E_TELEMETRY_STATUS                    (-204)
 
@@ -475,6 +490,167 @@
   \brief The requested address was not found in the received data.
 */
 #define RADIOLIB_ERR_ADDRESS_NOT_FOUND                          (-1002)
+
+/*!
+  \brief The function code is invalid. 2 Bits only.
+*/
+#define RADIOLIB_ERR_INVALID_FUNCTION                           (-1003)
+
+// LoRaWAN-specific status codes
+
+/*!
+  \brief Unable to restore existing LoRaWAN session because this node did not join any network yet.
+*/
+#define RADIOLIB_ERR_NETWORK_NOT_JOINED                         (-1101)
+
+/*!
+  \brief Malformed downlink packet received from network server.
+*/
+#define RADIOLIB_ERR_DOWNLINK_MALFORMED                         (-1102)
+
+/*!
+  \brief Network server requested switch to unsupported LoRaWAN revision.
+*/
+#define RADIOLIB_ERR_INVALID_REVISION                           (-1103)
+
+/*!
+  \brief Invalid LoRaWAN uplink port requested by user, or downlink received at invalid port.
+*/
+#define RADIOLIB_ERR_INVALID_PORT                               (-1104)
+
+/*!
+  \brief User did not enable downlink in time.
+*/
+#define RADIOLIB_ERR_NO_RX_WINDOW                               (-1105)
+
+/*!
+  \brief There are no channels available for the requested datarate.
+*/
+#define RADIOLIB_ERR_NO_CHANNEL_AVAILABLE                       (-1106)
+
+/*!
+  \brief Invalid LoRaWAN MAC command ID.
+*/
+#define RADIOLIB_ERR_INVALID_CID                                (-1107)
+
+/*!
+  \brief User requested to start uplink while still inside RX window or under dutycycle.
+*/
+#define RADIOLIB_ERR_UPLINK_UNAVAILABLE                         (-1108)
+
+/*!
+  \brief Unable to push new MAC command because the queue is full.
+*/
+#define RADIOLIB_ERR_COMMAND_QUEUE_FULL                         (-1109)
+
+/*!
+  \brief Unable to delete MAC command because it was not found in the queue.
+*/
+#define RADIOLIB_ERR_COMMAND_QUEUE_ITEM_NOT_FOUND               (-1110)
+
+/*!
+  \brief Unable to join network because JoinNonce is not higher than saved value.
+*/
+#define RADIOLIB_ERR_JOIN_NONCE_INVALID                         (-1111)
+
+/*!
+  \brief The downlink MIC could not be verified (incorrect key or invalid FCnt)
+*/
+#define RADIOLIB_ERR_MIC_MISMATCH                               (-1112)
+
+/*!
+  \brief Multicast frame counter is invalid (outside bounds).
+*/
+#define RADIOLIB_ERR_MULTICAST_FCNT_INVALID                     (-1113)
+
+/*!
+  \brief Uplink payload length at this datarate exceeds the active dwell time limitations.
+*/
+#define RADIOLIB_ERR_DWELL_TIME_EXCEEDED                        (-1114)
+
+/*!
+  \brief The buffer integrity check did not match the supplied checksum value.
+*/
+#define RADIOLIB_ERR_CHECKSUM_MISMATCH                          (-1115)
+
+/*!
+  \brief No JoinAccept was received - check your keys, or otherwise likely a range issue!
+*/
+#define RADIOLIB_ERR_NO_JOIN_ACCEPT                             (-1116)
+
+/*!
+  \brief The LoRaWAN session was successfully re-activated.
+*/
+#define RADIOLIB_LORAWAN_SESSION_RESTORED                       (-1117)
+
+/*!
+  \brief A new LoRaWAN session is started.
+*/
+#define RADIOLIB_LORAWAN_NEW_SESSION                            (-1118)
+
+/*!
+  \brief The supplied Nonces buffer is discarded as its activation information is invalid.
+*/
+#define RADIOLIB_ERR_NONCES_DISCARDED                           (-1119)
+
+/*!
+  \brief The supplied Session buffer is discarded as it doesn't match the Nonces.
+*/
+#define RADIOLIB_ERR_SESSION_DISCARDED                          (-1120)
+
+/*!
+  \brief The requested command is unavailable under the current LoRaWAN mode.
+*/
+#define RADIOLIB_ERR_INVALID_MODE                               (-1121)
+
+// LR11x0-specific status codes
+
+/*!
+  \brief The selected 802.11 WiFi type is invalid.
+*/
+#define RADIOLIB_ERR_INVALID_WIFI_TYPE                          (-1200)
+
+/*!
+  \brief GNSS subframe not available in the next 2.3 seconds.
+*/
+#define RADIOLIB_ERR_GNSS_SUBFRAME_NOT_AVAILABLE                (-1201)
+
+/*!
+  \brief Offset of GNSS demodulator errors.
+  See LR11x0 datasheet for details on the actual demodulator error
+*/
+#define RADIOLIB_ERR_GNSS_DEMOD_OFFSET                          (-1210)
+#define RADIOLIB_ERR_GNSS_DEMOD(X)                              (RADIOLIB_ERR_GNSS_DEMOD_OFFSET + (X))
+#define RADIOLIB_GET_GNSS_DEMOD_ERROR(X)                        ((X) - RADIOLIB_ERR_GNSS_DEMOD_OFFSET)
+
+/*!
+  \brief GNSS solver errors.
+  See LR11x0 datasheet for details on the actual solver error
+*/
+#define RADIOLIB_ERR_GNSS_SOLVER_OFFSET                         (-1230)
+#define RADIOLIB_ERR_GNSS_SOLVER(X)                             (RADIOLIB_ERR_GNSS_SOLVER_OFFSET - (X))
+#define RADIOLIB_GET_GNSS_SOLVER_ERROR(X)                       (-((X) - RADIOLIB_ERR_GNSS_SOLVER_OFFSET))
+
+/*!
+  \}
+*/
+
+/*!
+  \defgroup typedefs Type aliases used by RadioLib.
+
+  \{
+*/
+
+/*!
+  \brief Type used for durations in RadioLib
+*/
+typedef unsigned long RadioLibTime_t;
+
+/*!
+  \brief Type used for radio-agnostic IRQ flags. IRQ to enable corresponds to the bit index (RadioLibIrq_t).
+  For example, if bit 0 is set, the module will enable its RADIOLIB_IRQ_TX_DONE (if it is supported).
+*/
+typedef uint32_t RadioLibIrqFlags_t;
 
 /*!
   \}

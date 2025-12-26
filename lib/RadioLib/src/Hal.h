@@ -4,8 +4,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "BuildOpt.h"
+
+/*! \brief Global-scope function that returns timestamp since start (in microseconds). */
+RadioLibTime_t rlb_time_us();
+
 /*!
-  \class Hal
+  \class RadioLibHal
   \brief Hardware abstraction library base interface.
 */
 class RadioLibHal {
@@ -102,28 +107,28 @@ class RadioLibHal {
       Must be implemented by the platform-specific hardware abstraction!
       \param ms Number of milliseconds to wait.
     */
-    virtual void delay(unsigned long ms) = 0;
+    virtual void delay(RadioLibTime_t ms) = 0;
     
     /*!
       \brief Blocking microsecond wait function.
       Must be implemented by the platform-specific hardware abstraction!
       \param us Number of microseconds to wait.
     */
-    virtual void delayMicroseconds(unsigned long us) = 0;
+    virtual void delayMicroseconds(RadioLibTime_t us) = 0;
     
     /*!
       \brief Get number of milliseconds since start.
       Must be implemented by the platform-specific hardware abstraction!
       \returns Number of milliseconds since start.
     */
-    virtual unsigned long millis() = 0;
+    virtual RadioLibTime_t millis() = 0;
     
     /*!
       \brief Get number of microseconds since start.
       Must be implemented by the platform-specific hardware abstraction!
       \returns Number of microseconds since start.
     */
-    virtual unsigned long micros() = 0;
+    virtual RadioLibTime_t micros() = 0;
     
     /*!
       \brief Measure the length of incoming digital pulse in microseconds.
@@ -133,7 +138,7 @@ class RadioLibHal {
       \param timeout Timeout in microseconds.
       \returns Pulse length in microseconds, or 0 if the pulse did not start before timeout.
     */
-    virtual long pulseIn(uint32_t pin, uint32_t state, unsigned long timeout) = 0;
+    virtual long pulseIn(uint32_t pin, uint32_t state, RadioLibTime_t timeout) = 0;
 
     /*!
       \brief SPI initialization method.
@@ -146,11 +151,12 @@ class RadioLibHal {
     virtual void spiBeginTransaction() = 0;
 
     /*!
-      \brief Method to transfer one byte over SPI.
-      \param b Byte to send.
-      \returns Received byte.
+      \brief Method to transfer buffer over SPI.
+      \param out Buffer to send.
+      \param len Number of data to send or receive.
+      \param in Buffer to save received data into.
     */
-    virtual uint8_t spiTransfer(uint8_t b) = 0;
+    virtual void spiTransfer(uint8_t* out, size_t len, uint8_t* in) = 0;
 
     /*!
       \brief Method to end SPI transaction.
@@ -168,13 +174,13 @@ class RadioLibHal {
     /*!
       \brief Module initialization method.
       This will be called by all radio modules at the beginning of startup.
-      Can be used to e.g., initalize SPI interface.
+      Can be used to e.g., initialize SPI interface.
     */
     virtual void init();
 
     /*!
       \brief Module termination method.
-      This will be called by all radio modules when the desctructor is called.
+      This will be called by all radio modules when the destructor is called.
       Can be used to e.g., stop SPI interface.
     */
     virtual void term();
@@ -185,7 +191,7 @@ class RadioLibHal {
       \param frequency Frequency of the square wave.
       \param duration Duration of the tone in ms. When set to 0, the tone will be infinite.
     */
-    virtual void tone(uint32_t pin, unsigned int frequency, unsigned long duration = 0);
+    virtual void tone(uint32_t pin, unsigned int frequency, RadioLibTime_t duration = 0);
 
     /*!
       \brief Method to stop producing a tone.

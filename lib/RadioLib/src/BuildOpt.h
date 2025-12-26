@@ -1,6 +1,127 @@
 #if !defined(_RADIOLIB_BUILD_OPTIONS_H)
 #define _RADIOLIB_BUILD_OPTIONS_H
 
+#include "TypeDef.h"
+
+/* RadioLib build configuration options */
+
+/*
+ * Debug output enable.
+ * Warning: Debug output will slow down the whole system significantly.
+ *          Also, it will result in larger compiled binary.
+ * Levels: basic - only main info
+ *         protocol - mainly LoRaWAN stuff, but other protocols as well
+ *         SPI - full transcript of all SPI communication
+ */
+#if !defined(RADIOLIB_DEBUG_BASIC)
+  #define RADIOLIB_DEBUG_BASIC (0)
+#endif
+#if !defined(RADIOLIB_DEBUG_PROTOCOL)
+  #define RADIOLIB_DEBUG_PROTOCOL (0)
+#endif
+#if !defined(RADIOLIB_DEBUG_SPI)
+  #define RADIOLIB_DEBUG_SPI (0)
+#endif
+#if !defined(RADIOLIB_VERBOSE_ASSERT)
+  #define RADIOLIB_VERBOSE_ASSERT (0)
+#endif
+
+// set which output port should be used for debug output
+// may be Serial port (on Arduino) or file like stdout or stderr (on generic platforms)
+#if !defined(RADIOLIB_DEBUG_PORT)
+  #if ARDUINO >= 100
+    #define RADIOLIB_DEBUG_PORT   Serial
+  #else
+    #define RADIOLIB_DEBUG_PORT   stdout
+  #endif
+#endif
+
+/*
+ * Comment to disable "paranoid" SPI mode, or set RADIOLIB_SPI_PARANOID to 0
+ * Every write to an SPI register using SPI set function will be verified by a subsequent read operation.
+ * This improves reliability, but slightly slows down communication.
+ * Note: Enabled by default.
+ */
+#if !defined(RADIOLIB_SPI_PARANOID)
+  #define RADIOLIB_SPI_PARANOID (1)
+#endif
+
+/*
+ * Comment to disable parameter range checking
+ * RadioLib will check provided parameters (such as frequency) against limits determined by the device manufacturer.
+ * It is highly advised to keep this macro defined, removing it will allow invalid values to be set,
+ * possibly leading to bricked module and/or program crashing.
+ * Note: Enabled by default.
+ */
+#if !defined(RADIOLIB_CHECK_PARAMS)
+  #define RADIOLIB_CHECK_PARAMS (1)
+#endif
+
+/*
+ * SX127x errata fix enable
+ * Warning: SX127x errata fix has been reported to cause issues with LoRa bandwidths lower than 62.5 kHz.
+ *          It should only be enabled if you really are observing some errata-related issue.
+ * Note: Disabled by default.
+ */
+#if !defined(RADIOLIB_FIX_ERRATA_SX127X)
+  #define RADIOLIB_FIX_ERRATA_SX127X (0)
+#endif
+
+/*
+ * God mode enable - all methods and member variables in all classes will be made public, thus making them accessible from Arduino code.
+ * Warning: Come on, it's called GOD mode - obviously only use this if you know what you're doing.
+ *          Failure to heed the above warning may result in bricked module.
+ */
+#if !defined(RADIOLIB_GODMODE)
+  #define RADIOLIB_GODMODE (0)
+#endif
+
+/*
+ * Low-level hardware access enable
+ * This will make some hardware methods like SPI get/set accessible from the user sketch - think of it as "god mode lite"
+ * Warning: RadioLib won't stop you from writing invalid stuff into your device, so it's quite easy to brick your module with this.
+ */
+#if !defined(RADIOLIB_LOW_LEVEL)
+  #define RADIOLIB_LOW_LEVEL (0)
+#endif
+
+/*
+ * Enable interrupt-based timing control
+ * For details, see https://github.com/jgromes/RadioLib/wiki/Interrupt-Based-Timing
+ */
+#if !defined(RADIOLIB_INTERRUPT_TIMING)
+  #define RADIOLIB_INTERRUPT_TIMING  (0)
+#endif
+
+/*
+ * Enable static-only memory management: no dynamic allocation will be performed.
+ * Warning: Large static arrays will be created in some methods. It is not advised to send large packets in this mode.
+ */
+#if !defined(RADIOLIB_STATIC_ONLY)
+  #define RADIOLIB_STATIC_ONLY  (0)
+#endif
+
+// set the size of static arrays to use
+#if !defined(RADIOLIB_STATIC_ARRAY_SIZE)
+  #define RADIOLIB_STATIC_ARRAY_SIZE   (256)
+#endif
+
+/*
+ * Uncomment on boards whose clock runs too slow or too fast
+ * Set the value according to the following scheme:
+ * Enable timestamps on your terminal
+ * Print something to terminal, wait 1000 milliseconds, print something again
+ * If the difference is e.g. 1014 milliseconds between the prints, set this value to 14
+ * Or, for more accuracy, wait for 100,000 milliseconds and divide the total drift by 100
+ */
+#if !defined(RADIOLIB_CLOCK_DRIFT_MS)
+  //#define RADIOLIB_CLOCK_DRIFT_MS                         (0)
+#endif
+
+#if !defined(RADIOLIB_LINE_FEED)
+  #define RADIOLIB_LINE_FEED    "\r\n"
+#endif
+
 #if ARDUINO >= 100
   // Arduino build
   #include "Arduino.h"
@@ -16,15 +137,12 @@
  * Platform-specific configuration.
  *
  * RADIOLIB_PLATFORM - platform name, used in debugging to quickly check the correct platform is detected.
- * RADIOLIB_NC - alias for unused pin, usually the largest possible value of uint8_t.
+ * RADIOLIB_NC - alias for unused pin, usually the largest possible value of uint32_t.
  * RADIOLIB_DEFAULT_SPI - default SPIClass instance to use.
  * RADIOLIB_NONVOLATILE - macro to place variable into program storage (usually Flash).
  * RADIOLIB_NONVOLATILE_READ_BYTE - function/macro to read variables saved in program storage (usually Flash).
- * RADIOLIB_TYPE_ALIAS - construct to create an alias for a type, usually vai the `using` keyword.
+ * RADIOLIB_TYPE_ALIAS - construct to create an alias for a type, usually via the `using` keyword.
  * RADIOLIB_TONE_UNSUPPORTED - some platforms do not have tone()/noTone(), which is required for AFSK.
- * RADIOLIB_BUILTIN_MODULE - some platforms have a builtin radio module on fixed pins, this macro is used to specify that pinout.
- *
- * In addition, some platforms may require RadioLib to disable specific drivers (such as ESP8266).
  *
  * Users may also specify their own configuration by uncommenting the RADIOLIB_CUSTOM_ARDUINO,
  * and then specifying all platform parameters in the section below. This will override automatic
@@ -61,34 +179,45 @@
   // NOTE: Some of the exclusion macros are dependent on each other. For example, it is not possible to exclude RF69
   //       while keeping SX1231 (because RF69 is the base class for SX1231). The dependency is always uni-directional,
   //       so excluding SX1231 and keeping RF69 is valid.
-  //#define RADIOLIB_EXCLUDE_CC1101
-  //#define RADIOLIB_EXCLUDE_NRF24
-  //#define RADIOLIB_EXCLUDE_RF69
-  //#define RADIOLIB_EXCLUDE_SX1231     // dependent on RADIOLIB_EXCLUDE_RF69
-  //#define RADIOLIB_EXCLUDE_SI443X
-  //#define RADIOLIB_EXCLUDE_RFM2X      // dependent on RADIOLIB_EXCLUDE_SI443X
-  //#define RADIOLIB_EXCLUDE_SX127X
-  //#define RADIOLIB_EXCLUDE_RFM9X      // dependent on RADIOLIB_EXCLUDE_SX127X
-  //#define RADIOLIB_EXCLUDE_SX126X
-  //#define RADIOLIB_EXCLUDE_STM32WLX   // dependent on RADIOLIB_EXCLUDE_SX126X
-  //#define RADIOLIB_EXCLUDE_SX128X
-  //#define RADIOLIB_EXCLUDE_AFSK
-  //#define RADIOLIB_EXCLUDE_AX25
-  //#define RADIOLIB_EXCLUDE_HELLSCHREIBER
-  //#define RADIOLIB_EXCLUDE_MORSE
-  //#define RADIOLIB_EXCLUDE_RTTY
-  //#define RADIOLIB_EXCLUDE_SSTV
-  //#define RADIOLIB_EXCLUDE_DIRECT_RECEIVE
+  //#define RADIOLIB_EXCLUDE_CC1101           (1)
+  //#define RADIOLIB_EXCLUDE_NRF24            (1)
+  //#define RADIOLIB_EXCLUDE_RF69             (1)
+  //#define RADIOLIB_EXCLUDE_SX1231           (1) // dependent on RADIOLIB_EXCLUDE_RF69
+  //#define RADIOLIB_EXCLUDE_SI443X           (1)
+  //#define RADIOLIB_EXCLUDE_RFM2X            (1) // dependent on RADIOLIB_EXCLUDE_SI443X
+  //#define RADIOLIB_EXCLUDE_SX127X           (1)
+  //#define RADIOLIB_EXCLUDE_SX126X           (1)
+  //#define RADIOLIB_EXCLUDE_STM32WLX         (1) // dependent on RADIOLIB_EXCLUDE_SX126X
+  //#define RADIOLIB_EXCLUDE_SX128X           (1)
+  //#define RADIOLIB_EXCLUDE_AFSK             (1)
+  //#define RADIOLIB_EXCLUDE_AX25             (1)
+  //#define RADIOLIB_EXCLUDE_HELLSCHREIBER    (1)
+  //#define RADIOLIB_EXCLUDE_MORSE            (1)
+  //#define RADIOLIB_EXCLUDE_RTTY             (1)
+  //#define RADIOLIB_EXCLUDE_SSTV             (1)
+  //#define RADIOLIB_EXCLUDE_DIRECT_RECEIVE   (1)
+  //#define RADIOLIB_EXCLUDE_BELL             (1)
+  //#define RADIOLIB_EXCLUDE_APRS             (1)
+  //#define RADIOLIB_EXCLUDE_LORAWAN          (1)
+  //#define RADIOLIB_EXCLUDE_LR11X0           (1)
+  //#define RADIOLIB_EXCLUDE_FSK4             (1)
+  //#define RADIOLIB_EXCLUDE_PAGER            (1)
 
 #elif defined(__AVR__) && !(defined(ARDUINO_AVR_UNO_WIFI_REV2) || defined(ARDUINO_AVR_NANO_EVERY) || defined(ARDUINO_ARCH_MEGAAVR))
   // Arduino AVR boards (except for megaAVR) - Uno, Mega etc.
   #define RADIOLIB_PLATFORM                           "Arduino AVR"
 
+  #if !(defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__))
+  #define RADIOLIB_LOWEND_PLATFORM
+  #endif
+
 #elif defined(ESP8266)
   // ESP8266 boards
   #define RADIOLIB_PLATFORM                           "ESP8266"
 
-#elif defined(ESP32)
+#elif defined(ESP32) || defined(ARDUINO_ARCH_ESP32)
+  #define RADIOLIB_ESP32
+
   // ESP32 boards
   #define RADIOLIB_PLATFORM                           "ESP32"
   
@@ -127,6 +256,9 @@
 #elif defined(ARDUINO_AVR_UNO_WIFI_REV2) || defined(ARDUINO_AVR_NANO_EVERY) || defined(PORTDUINO)
   // Arduino megaAVR boards - Uno Wifi Rev.2, Nano Every
   #define RADIOLIB_PLATFORM                           "Arduino megaAVR"
+  #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
+  #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
+  #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
 #elif defined(ARDUINO_ARCH_APOLLO3)
   // Sparkfun Apollo3 boards
@@ -142,20 +274,24 @@
   #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
+  #if defined(ARDUINO_ARCH_MBED)
   // Arduino mbed OS boards have a really bad tone implementation which will crash after a couple seconds
   #define RADIOLIB_TONE_UNSUPPORTED
   #define RADIOLIB_MBED_TONE_OVERRIDE
+  #endif
 
-#elif defined(ARDUINO_PORTENTA_H7_M7) || defined(ARDUINO_PORTENTA_H7_M4)
+#elif defined(ARDUINO_PORTENTA_H7_M7) || defined(ARDUINO_PORTENTA_H7_M4) || defined(ARDUINO_PORTENTA_H7)
   // Arduino Portenta H7
   #define RADIOLIB_PLATFORM                           "Portenta H7"
   #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
   #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
+  #if defined(ARDUINO_ARCH_MBED)
   // Arduino mbed OS boards have a really bad tone implementation which will crash after a couple seconds
   #define RADIOLIB_TONE_UNSUPPORTED
   #define RADIOLIB_MBED_TONE_OVERRIDE
+  #endif
 
 #elif defined(__STM32F4__) || defined(__STM32F1__)
   // Arduino STM32 core by Roger Clark (https://github.com/rogerclarkmelbourne/Arduino_STM32)
@@ -192,10 +328,6 @@
   #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PINMODE)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (IrqModes)
 
-  // provide an easy access to the on-board module
-  #include "board-config.h"
-  #define RADIOLIB_BUILTIN_MODULE                      RADIO_NSS, RADIO_DIO_1, RADIO_RESET, RADIO_BUSY
-
   // CubeCell doesn't seem to define nullptr, let's do something like that now
   #define nullptr                                     NULL
 
@@ -230,17 +362,31 @@
   // ... and for the grand finale, we have millis() and micros() DEFINED AS MACROS!
   #if defined(millis)
   #undef millis
-  inline unsigned long millis() { return((unsigned long)(STCV / 1000)); };
+  inline RadioLibTime_t millis() { return((RadioLibTime_t)(STCV / 1000)); };
   #endif
 
   #if defined(micros)
   #undef micros
-  inline unsigned long micros() { return((unsigned long)(STCV)); };
+  inline RadioLibTime_t micros() { return((RadioLibTime_t)(STCV)); };
   #endif
 
 #elif defined(TEENSYDUINO)
   // Teensy
   #define RADIOLIB_PLATFORM                           "Teensy"
+
+#elif defined(ARDUINO_ARCH_RENESAS)
+  // Arduino Renesas (UNO R4)
+  #define RADIOLIB_PLATFORM                           "Arduino Renesas (UNO R4)"
+  #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
+  #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
+  #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
+
+#elif defined(ARDUINO_ARCH_SILABS)
+  // Silicon Labs Arduino
+  #define RADIOLIB_PLATFORM                           "Arduino Silicon Labs"
+  #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
+  #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
+  #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
 #else
   // other Arduino platforms not covered by the above list - this may or may not work
@@ -299,183 +445,169 @@
   // generic non-Arduino platform
   #define RADIOLIB_PLATFORM                           "Generic"
 
-  #define RADIOLIB_NC                                 (0xFF)
+  #define RADIOLIB_NC                                 (0xFFFFFFFF)
   #define RADIOLIB_NONVOLATILE
-  #define RADIOLIB_NONVOLATILE_READ_BYTE(addr)        (*((uint8_t *)(void *)(addr)))
-  #define RADIOLIB_NONVOLATILE_READ_DWORD(addr)       (*((uint32_t *)(void *)(addr)))
+  #define RADIOLIB_NONVOLATILE_READ_BYTE(addr)        (*(reinterpret_cast<uint8_t *>(reinterpret_cast<void *>(addr))))
+  #define RADIOLIB_NONVOLATILE_READ_DWORD(addr)       (*(reinterpret_cast<uint32_t *>(reinterpret_cast<void *>(addr))))
   #define RADIOLIB_TYPE_ALIAS(type, alias)            using alias = type;
-
-  #if !defined(RADIOLIB_DEBUG_PORT)
-    #define RADIOLIB_DEBUG_PORT                       stdout
-  #endif
 
   #define DEC 10
   #define HEX 16
   #define OCT 8
   #define BIN 2
 
-  #include <algorithm>
   #include <stdint.h>
 
-  using std::max;
-  using std::min;
-#endif
-
-/*
- * Uncomment to enable debug output.
- * Warning: Debug output will slow down the whole system significantly.
- *          Also, it will result in larger compiled binary.
- * Levels: debug - only main info
- *         verbose - full transcript of all SPI communication
- */
-#if !defined(RADIOLIB_DEBUG)
-  //#define RADIOLIB_DEBUG
-#endif
-#if !defined(RADIOLIB_VERBOSE)
-  //#define RADIOLIB_VERBOSE
-#endif
-
-// set which output port should be used for debug output
-// may be Serial port (on Arduino) or file like stdout or stderr (on generic platforms)
-#if defined(RADIOLIB_BUILD_ARDUINO) && !defined(RADIOLIB_DEBUG_PORT)
-  #define RADIOLIB_DEBUG_PORT   Serial
-#endif
-
-/*
- * Uncomment to enable "paranoid" SPI mode
- * Every write to an SPI register using SPI set function will be verified by a subsequent read operation.
- * This improves reliablility, but slightly slows down communication.
- * Note: Enabled by default.
- */
-#if !defined(RADIOLIB_SPI_PARANOID)
-  #define RADIOLIB_SPI_PARANOID
-#endif
-
-/*
- * Uncomment to enable parameter range checking
- * RadioLib will check provided parameters (such as frequency) against limits determined by the device manufacturer.
- * It is highly advised to keep this macro defined, removing it will allow invalid values to be set,
- * possibly leading to bricked module and/or program crashing.
- * Note: Enabled by default.
- */
-#if !defined(RADIOLIB_CHECK_PARAMS)
-  #define RADIOLIB_CHECK_PARAMS
-#endif
-
-/*
- * Uncomment to enable SX127x errata fix
- * Warning: SX127x errata fix has been reported to cause issues with LoRa bandwidths lower than 62.5 kHz.
- *          It should only be enabled if you really are observing some errata-related issue.
- * Note: Disabled by default.
- */
-#if !defined(RADIOLIB_FIX_ERRATA_SX127X)
-  //#define RADIOLIB_FIX_ERRATA_SX127X
-#endif
-
-/*
- * Uncomment to enable god mode - all methods and member variables in all classes will be made public, thus making them accessible from Arduino code.
- * Warning: Come on, it's called GOD mode - obviously only use this if you know what you're doing.
- *          Failure to heed the above warning may result in bricked module.
- */
-#if !defined(RADIOLIB_GODMODE)
-  //#define RADIOLIB_GODMODE
-#endif
-
-/*
- * Uncomment to enable low-level hardware access
- * This will make some hardware methods like SPI get/set accessible from the user sketch - think of it as "god mode lite"
- * Warning: RadioLib won't stop you from writing invalid stuff into your device, so it's quite easy to brick your module with this.
- */
-#if !defined(RADIOLIB_LOW_LEVEL)
-  //#define RADIOLIB_LOW_LEVEL
-#endif
-
-/*
- * Uncomment to enable pre-defined modules when using RadioShield.
- */
-#if !defined(RADIOLIB_RADIOSHIELD)
-  //#define RADIOLIB_RADIOSHIELD
-#endif
-
-/*
- * Uncomment to enable interrupt-based timing control
- * For details, see https://github.com/jgromes/RadioLib/wiki/Interrupt-Based-Timing
- */
-#if !defined(RADIOLIB_INTERRUPT_TIMING)
-  //#define RADIOLIB_INTERRUPT_TIMING
-#endif
-
-/*
- * Uncomment to enable static-only memory management: no dynamic allocation will be performed.
- * Warning: Large static arrays will be created in some methods. It is not advised to send large packets in this mode.
- */
-#if !defined(RADIOLIB_STATIC_ONLY)
-  //#define RADIOLIB_STATIC_ONLY
-#endif
-
-// set the size of static arrays to use
-#if !defined(RADIOLIB_STATIC_ARRAY_SIZE)
-  #define RADIOLIB_STATIC_ARRAY_SIZE   (256)
 #endif
 
 // This only compiles on STM32 boards with SUBGHZ module, but also
 // include when generating docs
 #if (!defined(ARDUINO_ARCH_STM32) || !defined(SUBGHZSPI_BASE)) && !defined(DOXYGEN)
-  #define RADIOLIB_EXCLUDE_STM32WLX
+  #define RADIOLIB_EXCLUDE_STM32WLX (1)
 #endif
 
-#if defined(RADIOLIB_DEBUG)
-  #if defined(RADIOLIB_BUILD_ARDUINO)
-    #define RADIOLIB_DEBUG_PRINT(...) Module::serialPrintf(__VA_ARGS__)
-    #define RADIOLIB_DEBUG_PRINTLN(M, ...) Module::serialPrintf(M "\n", ##__VA_ARGS__)
-  #else
-    #if !defined(RADIOLIB_DEBUG_PRINT)
-      #define RADIOLIB_DEBUG_PRINT(...) fprintf(RADIOLIB_DEBUG_PORT, __VA_ARGS__)
-    #endif
-    #if !defined(RADIOLIB_DEBUG_PRINTLN)
-      #define RADIOLIB_DEBUG_PRINTLN(M, ...) fprintf(RADIOLIB_DEBUG_PORT, M "\n", ##__VA_ARGS__)
-    #endif
+// if verbose assert is enabled, enable basic debug too
+#if RADIOLIB_VERBOSE_ASSERT
+  #define RADIOLIB_DEBUG  (1)
+#endif
+
+// set the global debug mode flag
+#if RADIOLIB_DEBUG_BASIC || RADIOLIB_DEBUG_PROTOCOL || RADIOLIB_DEBUG_SPI
+  #define RADIOLIB_DEBUG  (1)
+#else
+  #define RADIOLIB_DEBUG  (0)
+#endif
+
+#if RADIOLIB_DEBUG
+  #if !defined(RADIOLIB_DEBUG_PRINT)
+    #define RADIOLIB_DEBUG_PRINT(M, ...) rlb_printf(false, M, ##__VA_ARGS__)
+    #define RADIOLIB_DEBUG_PRINT_LVL(LEVEL, M, ...) rlb_printf(true, LEVEL "" M, ##__VA_ARGS__)
   #endif
+
+  #if !defined(RADIOLIB_DEBUG_PRINTLN)
+    #define RADIOLIB_DEBUG_PRINTLN(M, ...) rlb_printf(false, M RADIOLIB_LINE_FEED, ##__VA_ARGS__)
+    #define RADIOLIB_DEBUG_PRINTLN_LVL(LEVEL, M, ...) rlb_printf(true, LEVEL "" M RADIOLIB_LINE_FEED, ##__VA_ARGS__)
+  #endif
+
+  // some Arduino platforms do not support printf("%f"), so it has to be done this way
+  #if defined(RADIOLIB_BUILD_ARDUINO)
+    #define RADIOLIB_DEBUG_PRINT_FLOAT(LEVEL, VAL, DECIMALS) RADIOLIB_DEBUG_PRINT(LEVEL); RADIOLIB_DEBUG_PORT.print(VAL, DECIMALS)
+  #else
+    #define RADIOLIB_DEBUG_PRINT_FLOAT(LEVEL, VAL, DECIMALS) RADIOLIB_DEBUG_PRINT(LEVEL "%.3f", VAL)
+  #endif
+
+  #define RADIOLIB_DEBUG_HEXDUMP(LEVEL, ...) rlb_hexdump(LEVEL, __VA_ARGS__)
 #else
   #define RADIOLIB_DEBUG_PRINT(...) {}
   #define RADIOLIB_DEBUG_PRINTLN(...) {}
+  #define RADIOLIB_DEBUG_PRINT_FLOAT(LEVEL, VAL, DECIMALS) {}
+  #define RADIOLIB_DEBUG_HEXDUMP(...) {}
 #endif
 
-#if defined(RADIOLIB_VERBOSE)
-  #define RADIOLIB_VERBOSE_PRINT(...) RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
-  #define RADIOLIB_VERBOSE_PRINTLN(...) RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
+#define RADIOLIB_DEBUG_TAG            ": "
+#define RADIOLIB_DEBUG_TAG_BASIC      "RLB_DBG" RADIOLIB_DEBUG_TAG
+#define RADIOLIB_DEBUG_TAG_PROTOCOL   "RLB_PRO" RADIOLIB_DEBUG_TAG
+#define RADIOLIB_DEBUG_TAG_SPI        "RLB_SPI" RADIOLIB_DEBUG_TAG
+
+#if RADIOLIB_DEBUG_BASIC
+  #define RADIOLIB_DEBUG_BASIC_PRINT(...)         RADIOLIB_DEBUG_PRINT_LVL(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN(...)       RADIOLIB_DEBUG_PRINTLN_LVL(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_HEXDUMP(...)       RADIOLIB_DEBUG_HEXDUMP(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(...)   RADIOLIB_DEBUG_PRINT_FLOAT(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINT_NOTAG(...)   RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN_NOTAG(...) RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
 #else
-  #define RADIOLIB_VERBOSE_PRINT(...) {}
-  #define RADIOLIB_VERBOSE_PRINTLN(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINT(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN(...) {}
+  #define RADIOLIB_DEBUG_BASIC_HEXDUMP(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINT_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN_NOTAG(...) {}
 #endif
+
+#if RADIOLIB_DEBUG_PROTOCOL
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT(...)          RADIOLIB_DEBUG_PRINT_LVL(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN(...)        RADIOLIB_DEBUG_PRINTLN_LVL(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_HEXDUMP(...)        RADIOLIB_DEBUG_HEXDUMP(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT(...)    RADIOLIB_DEBUG_PRINT_FLOAT(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(...)    RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN_NOTAG(...)  RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
+#else
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_HEXDUMP(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN_NOTAG(...) {}
+#endif
+
+#if RADIOLIB_DEBUG_SPI
+  #define RADIOLIB_DEBUG_SPI_PRINT(...)           RADIOLIB_DEBUG_PRINT_LVL(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINTLN(...)         RADIOLIB_DEBUG_PRINTLN_LVL(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_HEXDUMP(...)         RADIOLIB_DEBUG_HEXDUMP(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT(...)     RADIOLIB_DEBUG_PRINT_FLOAT(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINT_NOTAG(...)     RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG(...)   RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
+#else
+  #define RADIOLIB_DEBUG_SPI_PRINT(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINTLN(...) {}
+  #define RADIOLIB_DEBUG_SPI_HEXDUMP(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINT_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG(...) {}
+#endif
+
+// debug info strings
+#define RADIOLIB_VALUE_TO_STRING(x) #x
+#define RADIOLIB_VALUE(x) RADIOLIB_VALUE_TO_STRING(x)
+
+#define RADIOLIB_INFO "\r\nRadioLib Info\nVersion:  \"" \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_MAJOR) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_MINOR) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_PATCH) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_EXTRA) "\"\r\n" \
+  "Platform: " RADIOLIB_VALUE(RADIOLIB_PLATFORM) "\r\n" \
+  RADIOLIB_VALUE(__DATE__) " " RADIOLIB_VALUE(__TIME__)
 
 /*!
   \brief A simple assert macro, will return on error.
+  If RADIOLIB_VERBOSE_ASSERT is enabled, the macro will also print out file and line number trace,
+  at a significant program storage cost.
 */
+#if RADIOLIB_VERBOSE_ASSERT
+#define RADIOLIB_ASSERT(STATEVAR) { if((STATEVAR) != RADIOLIB_ERR_NONE) { RADIOLIB_DEBUG_BASIC_PRINTLN("%d at %s:%d", STATEVAR, __FILE__, __LINE__); return(STATEVAR); } }
+#define RADIOLIB_ASSERT_PTR(PTR) { if((PTR) == NULL) { RADIOLIB_DEBUG_BASIC_PRINTLN("NULL at %s:%d", __FILE__, __LINE__); return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED); } }
+#else
 #define RADIOLIB_ASSERT(STATEVAR) { if((STATEVAR) != RADIOLIB_ERR_NONE) { return(STATEVAR); } }
-
+#define RADIOLIB_ASSERT_PTR(PTR) { if((PTR) == NULL) { return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED); } }
+#endif
 
 /*!
   \brief Macro to check variable is within constraints - this is commonly used to check parameter ranges. Requires RADIOLIB_CHECK_RANGE to be enabled
 */
-#if defined(RADIOLIB_CHECK_PARAMS)
+#if RADIOLIB_CHECK_PARAMS
   #define RADIOLIB_CHECK_RANGE(VAR, MIN, MAX, ERR) { if(!(((VAR) >= (MIN)) && ((VAR) <= (MAX)))) { return(ERR); } }
 #else
   #define RADIOLIB_CHECK_RANGE(VAR, MIN, MAX, ERR) {}
 #endif
 
-#if defined(RADIOLIB_FIX_ERRATA_SX127X)
+#if RADIOLIB_FIX_ERRATA_SX127X
   #define RADIOLIB_ERRATA_SX127X(...) { errataFix(__VA_ARGS__); }
 #else
   #define RADIOLIB_ERRATA_SX127X(...) {}
 #endif
 
-// version definitions
-#define RADIOLIB_VERSION_MAJOR  (0x06)
-#define RADIOLIB_VERSION_MINOR  (0x00)
-#define RADIOLIB_VERSION_PATCH  (0x00)
-#define RADIOLIB_VERSION_EXTRA  (0x00)
+// these macros are usually defined by Arduino, but some platforms undef them, so its safer to use our own
+#define RADIOLIB_MIN(a,b)				((a)<(b)?(a):(b))
+#define RADIOLIB_MAX(a,b)				((a)>(b)?(a):(b))
+#define RADIOLIB_ABS(x)         ((x)>0?(x):-(x))
 
-#define RADIOLIB_VERSION ((RADIOLIB_VERSION_MAJOR << 24) | (RADIOLIB_VERSION_MINOR << 16) | (RADIOLIB_VERSION_PATCH << 8) | (RADIOLIB_VERSION_EXTRA))
+// version definitions
+#define RADIOLIB_VERSION_MAJOR  7
+#define RADIOLIB_VERSION_MINOR  4
+#define RADIOLIB_VERSION_PATCH  0
+#define RADIOLIB_VERSION_EXTRA  0
+
+#define RADIOLIB_VERSION (((RADIOLIB_VERSION_MAJOR) << 24) | ((RADIOLIB_VERSION_MINOR) << 16) | ((RADIOLIB_VERSION_PATCH) << 8) | (RADIOLIB_VERSION_EXTRA))
 
 #endif

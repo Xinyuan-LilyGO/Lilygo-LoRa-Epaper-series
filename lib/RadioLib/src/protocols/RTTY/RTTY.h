@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_RTTY)
+#if !RADIOLIB_EXCLUDE_RTTY
 
 #include "../PhysicalLayer/PhysicalLayer.h"
 #include "../AFSK/AFSK.h"
@@ -22,7 +22,7 @@ class RTTYClient: public RadioLibPrint {
     */
     explicit RTTYClient(PhysicalLayer* phy);
 
-    #if !defined(RADIOLIB_EXCLUDE_AFSK)
+    #if !RADIOLIB_EXCLUDE_AFSK
     /*!
       \brief Constructor for AFSK mode.
       \param audio Pointer to the AFSK instance providing audio.
@@ -59,19 +59,19 @@ class RTTYClient: public RadioLibPrint {
       \param b Byte to write.
       \returns 1 if the byte was written, 0 otherwise.
     */
-    size_t write(uint8_t b);
+    size_t write(uint8_t b) override;
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     PhysicalLayer* phyLayer;
-    #if !defined(RADIOLIB_EXCLUDE_AFSK)
+    #if !RADIOLIB_EXCLUDE_AFSK
     AFSKClient* audioClient;
     #endif
 
     uint32_t baseFreq = 0, baseFreqHz = 0;
     uint32_t shiftFreq = 0, shiftFreqHz = 0;
-    uint32_t bitDuration = 0;
+    RadioLibTime_t bitDuration = 0;
     uint8_t stopBitsNum = 0;
 
     void mark();

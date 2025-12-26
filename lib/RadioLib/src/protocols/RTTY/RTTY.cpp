@@ -2,17 +2,17 @@
 
 #include <math.h>
 
-#if !defined(RADIOLIB_EXCLUDE_RTTY)
+#if !RADIOLIB_EXCLUDE_RTTY
 
 RTTYClient::RTTYClient(PhysicalLayer* phy) {
   phyLayer = phy;
   lineFeed = "\r\n";
-  #if !defined(RADIOLIB_EXCLUDE_AFSK)
+  #if !RADIOLIB_EXCLUDE_AFSK
   audioClient = nullptr;
   #endif
 }
 
-#if !defined(RADIOLIB_EXCLUDE_AFSK)
+#if !RADIOLIB_EXCLUDE_AFSK
 RTTYClient::RTTYClient(AFSKClient* audio) {
   phyLayer = audio->phyLayer;
   lineFeed = "\r\n";
@@ -28,10 +28,10 @@ int16_t RTTYClient::begin(float base, uint32_t shift, uint16_t rate, uint8_t enc
   shiftFreqHz = shift;
 
   // calculate duration of 1 bit
-  bitDuration = (uint32_t)1000000/rate;
+  bitDuration = (RadioLibTime_t)1000000/rate;
 
   // calculate module carrier frequency resolution
-  uint32_t step = round(phyLayer->getFreqStep());
+  uint32_t step = round(phyLayer->freqStep);
 
   // check minimum shift value
   if(shift < step / 2) {
@@ -46,7 +46,7 @@ int16_t RTTYClient::begin(float base, uint32_t shift, uint16_t rate, uint8_t enc
   }
 
   // calculate 24-bit frequency
-  baseFreq = (base * 1000000.0) / phyLayer->getFreqStep();
+  baseFreq = (base * 1000000.0f) / phyLayer->freqStep;
 
   // configure for direct mode
   return(phyLayer->startDirect());
@@ -91,20 +91,20 @@ size_t RTTYClient::write(uint8_t b) {
 
 void RTTYClient::mark() {
   Module* mod = phyLayer->getMod();
-  uint32_t start = mod->hal->micros();
+  RadioLibTime_t start = mod->hal->micros();
   transmitDirect(baseFreq + shiftFreq, baseFreqHz + shiftFreqHz);
   mod->waitForMicroseconds(start, bitDuration);
 }
 
 void RTTYClient::space() {
   Module* mod = phyLayer->getMod();
-  uint32_t start = mod->hal->micros();
+  RadioLibTime_t start = mod->hal->micros();
   transmitDirect(baseFreq, baseFreqHz);
   mod->waitForMicroseconds(start, bitDuration);
 }
 
 int16_t RTTYClient::transmitDirect(uint32_t freq, uint32_t freqHz) {
-  #if !defined(RADIOLIB_EXCLUDE_AFSK)
+  #if !RADIOLIB_EXCLUDE_AFSK
   if(audioClient != nullptr) {
     return(audioClient->tone(freqHz));
   }
@@ -116,7 +116,7 @@ int16_t RTTYClient::standby() {
   // ensure everything is stopped in interrupt timing mode
   Module* mod = phyLayer->getMod();
   mod->waitForMicroseconds(0, 0);
-  #if !defined(RADIOLIB_EXCLUDE_AFSK)
+  #if !RADIOLIB_EXCLUDE_AFSK
   if(audioClient != nullptr) {
     return(audioClient->noTone());
   }

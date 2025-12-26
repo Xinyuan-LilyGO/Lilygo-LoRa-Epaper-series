@@ -1,18 +1,18 @@
 /*
-   RadioLib CC1101 Transmit with Interrupts Example
+  RadioLib CC1101 Transmit with Interrupts Example
 
-   This example transmits packets using CC1101 FSK radio module.
-   Once a packet is transmitted, an interrupt is triggered.
-   Each packet contains up to 64 bytes of data, in the form of:
-    - Arduino String
-    - null-terminated char array (C-string)
-    - arbitrary binary data (byte array)
+  This example transmits packets using CC1101 FSK radio module.
+  Once a packet is transmitted, an interrupt is triggered.
+  Each packet contains up to 255 bytes of data with some limitations (https://github.com/jgromes/RadioLib/discussions/1138), in the form of:
+  - Arduino String
+  - null-terminated char array (C-string)
+  - arbitrary binary data (byte array)
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#cc1101
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#cc1101
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -25,48 +25,16 @@
 // GDO2 pin:  3
 CC1101 radio = new Module(10, 2, RADIOLIB_NC, 3);
 
-// or using RadioShield
-// https://github.com/jgromes/RadioShield
-//CC1101 radio = RadioShield.ModuleA;
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio = new RadioModule();
+*/
 
 // save transmission state between loops
 int transmissionState = RADIOLIB_ERR_NONE;
-
-void setup() {
-  Serial.begin(9600);
-
-  // initialize CC1101 with default settings
-  Serial.print(F("[CC1101] Initializing ... "));
-  int state = radio.begin();
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
-  } else {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while (true);
-  }
-
-  // set the function that will be called
-  // when packet transmission is finished
-  // NOTE: Unlike other modules (such as SX127x),
-  //       different GDOx pins are used for
-  //       transmit and receive interrupts!
-  radio.setGdo2Action(setFlag, FALLING);
-
-  // start transmitting the first packet
-  Serial.print(F("[CC1101] Sending first packet ... "));
-
-  // you can transmit C-string or Arduino string up to
-  // 64 characters long
-  transmissionState = radio.startTransmit("Hello World!");
-
-  // you can also transmit byte array up to 64 bytes long
-  /*
-    byte byteArr[] = {0x01, 0x23, 0x45, 0x56,
-                      0x78, 0xAB, 0xCD, 0xEF};
-    state = radio.startTransmit(byteArr, 8);
-  */
-}
 
 // flag to indicate that a packet was sent
 volatile bool transmittedFlag = false;
@@ -82,6 +50,44 @@ void setFlag(void) {
   // we sent a packet, set the flag
   transmittedFlag = true;
 }
+
+void setup() {
+  Serial.begin(9600);
+
+  // initialize CC1101 with default settings
+  Serial.print(F("[CC1101] Initializing ... "));
+  int state = radio.begin();
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+
+  // set the function that will be called
+  // when packet transmission is finished
+  radio.setPacketSentAction(setFlag);
+
+  // start transmitting the first packet
+  Serial.print(F("[CC1101] Sending first packet ... "));
+
+  // you can transmit C-string or Arduino string up to
+  // 255 characters long
+  transmissionState = radio.startTransmit("Hello World!");
+
+  // you can also transmit byte array up to 255 bytes long
+  // When transmitting more than 64 bytes startTransmit blocks to refill the FIFO.
+  // Blocking ceases once the last bytes have been placed in the FIFO
+  /*
+    byte byteArr[] = {0x01, 0x23, 0x45, 0x56,
+                      0x78, 0xAB, 0xCD, 0xEF};
+    state = radio.startTransmit(byteArr, 8);
+  */
+}
+
+// counter to keep track of transmitted packets
+int count = 0;
 
 void loop() {
   // check if the previous transmission finished
@@ -115,10 +121,11 @@ void loop() {
     Serial.print(F("[CC1101] Sending another packet ... "));
 
     // you can transmit C-string or Arduino string up to
-    // 256 characters long
-    transmissionState = radio.startTransmit("Hello World!");
+    // 255 characters long
+    String str = "Hello World! #" + String(count++);
+    transmissionState = radio.startTransmit(str);
 
-    // you can also transmit byte array up to 256 bytes long
+    // you can also transmit byte array up to 255 bytes long with limitations https://github.com/jgromes/RadioLib/discussions/1138
     /*
       byte byteArr[] = {0x01, 0x23, 0x45, 0x67,
                         0x89, 0xAB, 0xCD, 0xEF};

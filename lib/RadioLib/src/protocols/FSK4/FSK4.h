@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_FSK4)
+#if !RADIOLIB_EXCLUDE_FSK4
 
 #include "../PhysicalLayer/PhysicalLayer.h"
 #include "../AFSK/AFSK.h"
@@ -20,7 +20,7 @@ class FSK4Client {
     */
     explicit FSK4Client(PhysicalLayer* phy);
 
-    #if !defined(RADIOLIB_EXCLUDE_AFSK)
+    #if !RADIOLIB_EXCLUDE_AFSK
     /*!
       \brief Constructor for AFSK mode.
       \param audio Pointer to the AFSK instance providing audio.
@@ -59,7 +59,7 @@ class FSK4Client {
       \param len Number of bytes to transmit.
       \returns Number of transmitted bytes.
     */
-    size_t write(uint8_t* buff, size_t len);
+    size_t write(const uint8_t* buff, size_t len);
 
     /*!
       \brief Transmit a single byte.
@@ -74,19 +74,19 @@ class FSK4Client {
     */
     int16_t standby();
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     PhysicalLayer* phyLayer;
-    #if !defined(RADIOLIB_EXCLUDE_AFSK)
+    #if !RADIOLIB_EXCLUDE_AFSK
     AFSKClient* audioClient;
     #endif
 
     uint32_t baseFreq = 0, baseFreqHz = 0;
     uint32_t shiftFreq = 0, shiftFreqHz = 0;
-    uint32_t bitDuration = 0;
-    uint32_t tones[4];
-    uint32_t tonesHz[4];
+    RadioLibTime_t bitDuration = 0;
+    uint32_t tones[4] = { 0 };
+    uint32_t tonesHz[4] = { 0 };
 
     void tone(uint8_t i);
 

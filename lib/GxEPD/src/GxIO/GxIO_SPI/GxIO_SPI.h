@@ -7,14 +7,11 @@
 
 #include <SPI.h>
 #include "../GxIO.h"
-#include "SoftSPI.h"
 
 class GxIO_SPI : public GxIO
 {
   public:
     GxIO_SPI(SPIClass& spi, int8_t cs, int8_t dc, int8_t rst = -1, int8_t bl = -1);
-    GxIO_SPI(int sck, int miso, int mosi,  int8_t cs, int8_t dc, int8_t rst = -1, int8_t bl = -1);
-
     const char* name = "GxIO_SPI";
     void reset();
     void init();
@@ -38,11 +35,9 @@ class GxIO_SPI : public GxIO
     void selectRegister(bool rs_low); // for generalized readData & writeData (RA8875)
     void setBackLight(bool lit);
   protected:
-    SoftSPI  *_soft_spi;
     SPIClass& _spi;
     SPISettings _spi_settings;
     int8_t _cs, _dc, _rst, _bl; // Control lines
-    bool _using_soft_spi;
 };
 
 #define GxIO_Class GxIO_SPI

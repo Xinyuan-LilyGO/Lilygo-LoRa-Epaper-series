@@ -1,26 +1,26 @@
 /*
-   RadioLib STM32WLx Receive with Interrupts Example
+  RadioLib STM32WLx Receive with Interrupts Example
 
-   This example listens for LoRa transmissions and tries to
-   receive them. Once a packet is received, an interrupt is
-   triggered. To successfully receive data, the following
-   settings have to be the same on both transmitter
-   and receiver:
-    - carrier frequency
-    - bandwidth
-    - spreading factor
-    - coding rate
-    - sync word
-   
-   This example assumes Nucleo WL55JC1 is used. For other Nucleo boards
-   or standalone STM32WL, some configuration such as TCXO voltage and
-   RF switch control may have to be adjusted.
+  This example listens for LoRa transmissions and tries to
+  receive them. Once a packet is received, an interrupt is
+  triggered. To successfully receive data, the following
+  settings have to be the same on both transmitter
+  and receiver:
+  - carrier frequency
+  - bandwidth
+  - spreading factor
+  - coding rate
+  - sync word
+  
+  This example assumes Nucleo WL55JC1 is used. For other Nucleo boards
+  or standalone STM32WL, some configuration such as TCXO voltage and
+  RF switch control may have to be adjusted.
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx126x---lora-modem
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx126x---lora-modem
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -31,8 +31,10 @@ STM32WLx radio = new STM32WLx_Module();
 
 // set RF switch configuration for Nucleo WL55JC1
 // NOTE: other boards may be different!
+//       Some boards may not have either LP or HP.
+//       For those, do not set the LP/HP entry in the table.
 static const uint32_t rfswitch_pins[] =
-                         {PC3,  PC4,  PC5};
+                         {PC3,  PC4,  PC5, RADIOLIB_NC, RADIOLIB_NC};
 static const Module::RfSwitchMode_t rfswitch_table[] = {
   {STM32WLx::MODE_IDLE,  {LOW,  LOW,  LOW}},
   {STM32WLx::MODE_RX,    {HIGH, HIGH, LOW}},
@@ -40,6 +42,18 @@ static const Module::RfSwitchMode_t rfswitch_table[] = {
   {STM32WLx::MODE_TX_HP, {HIGH, LOW,  HIGH}},
   END_OF_MODE_TABLE,
 };
+
+// flag to indicate that a packet was received
+volatile bool receivedFlag = false;
+
+// this function is called when a complete packet
+// is received by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+void setFlag(void) {
+  // we got a packet, set the flag
+  receivedFlag = true;
+}
 
 void setup() {
   Serial.begin(9600);
@@ -56,7 +70,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set appropriate TCXO voltage for Nucleo WL55JC1
@@ -66,7 +80,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set the function that will be called
@@ -81,7 +95,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // if needed, 'listen' mode can be disabled by calling
@@ -93,18 +107,6 @@ void setup() {
   // radio.receive();
   // radio.readData();
   // radio.scanChannel();
-}
-
-// flag to indicate that a packet was received
-volatile bool receivedFlag = false;
-
-// this function is called when a complete packet
-// is received by the module
-// IMPORTANT: this function MUST be 'void' type
-//            and MUST NOT have any arguments!
-void setFlag(void) {
-  // we got a packet, set the flag
-  receivedFlag = true;
 }
 
 void loop() {
@@ -120,7 +122,8 @@ void loop() {
     // you can also read received data as byte array
     /*
       byte byteArr[8];
-      int state = radio.readData(byteArr, 8);
+      int numBytes = radio.getPacketLength();
+      int state = radio.readData(byteArr, numBytes);
     */
 
     if (state == RADIOLIB_ERR_NONE) {
@@ -151,8 +154,5 @@ void loop() {
       Serial.println(state);
 
     }
-
-    // put module back to listen mode
-    radio.startReceive();
   }
 }

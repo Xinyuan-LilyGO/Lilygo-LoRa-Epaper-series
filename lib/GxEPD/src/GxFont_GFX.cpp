@@ -65,11 +65,6 @@ void GxFont_GFX::setFont(const uint8_t *font)
   _U8G2_FONTS_GFX.setFont(font);
 }
 
-// int16_t GxFont_GFX::getUTF8Width(const char *str)
-// {
-//  return _U8G2_FONTS_GFX.getUTF8Width(str);
-// }
-
 #endif
 
 #if defined(_ADAFRUIT_TF_GFX_H_)
@@ -179,7 +174,6 @@ size_t GxFont_GFX::write(uint8_t v)
         break;
 #endif
     }
-    return 0;
 }
 
 int16_t GxFont_GFX::getCursorX(void) const
@@ -201,7 +195,6 @@ int16_t GxFont_GFX::getCursorX(void) const
       return _GxF_GxFont_GFX_TFT_eSPI.getCursorX();
 #endif
   }
-  return 0;
 }
 
 int16_t GxFont_GFX::getCursorY(void) const
@@ -223,7 +216,6 @@ int16_t GxFont_GFX::getCursorY(void) const
       return _GxF_GxFont_GFX_TFT_eSPI.getCursorY();
 #endif
   }
-  return 0;
 }
 
 #endif

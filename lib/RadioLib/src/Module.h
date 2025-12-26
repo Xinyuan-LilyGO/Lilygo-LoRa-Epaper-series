@@ -3,6 +3,7 @@
 
 #include "TypeDef.h"
 #include "Hal.h"
+#include "utils/Utils.h"
 
 #if defined(RADIOLIB_BUILD_ARDUINO)
   #include <SPI.h>
@@ -13,15 +14,56 @@
 #endif
 
 /*!
-* Value to use as the last element in a mode table to indicate the
-* end of the table.
-*
-* See setRfSwitchTable() for details.
+  \def END_OF_MODE_TABLE Value to use as the last element in a mode table to indicate the
+  end of the table. See \ref setRfSwitchTable for details.
 */
 #define END_OF_MODE_TABLE    { Module::MODE_END_OF_TABLE, {} }
 
-// default timeout for SPI transfers
-#define RADIOLIB_MODULE_SPI_TIMEOUT                             (1000)
+/*!
+  \def RFSWITCH_PIN_FLAG Bit flag used to mark unused pins in RF switch pin map. This can be either
+  unconnected pin marked with RADIOLIB_NC, or a pin controlled by the radio (e.g. DIOx pins on LR11x0),
+  as opposed to an MCU-controlled GPIO pin.
+*/
+#define RFSWITCH_PIN_FLAG                                       (0x01UL << 31)
+
+/*!
+  \defgroup module_spi_command_pos Position of commands in Module::spiConfig command array.
+  \{
+*/
+
+/*! \def RADIOLIB_MODULE_SPI_COMMAND_READ Position of the read command. */
+#define RADIOLIB_MODULE_SPI_COMMAND_READ                        (0)
+
+/*! \def RADIOLIB_MODULE_SPI_COMMAND_WRITE Position of the write command. */
+#define RADIOLIB_MODULE_SPI_COMMAND_WRITE                       (1)
+
+/*! \def RADIOLIB_MODULE_SPI_COMMAND_NOP Position of the no-operation command. */
+#define RADIOLIB_MODULE_SPI_COMMAND_NOP                         (2)
+
+/*! \def RADIOLIB_MODULE_SPI_COMMAND_STATUS Position of the status command. */
+#define RADIOLIB_MODULE_SPI_COMMAND_STATUS                      (3)
+
+/*!
+  \}
+*/
+
+/*!
+  \defgroup module_spi_width_pos Position of bit field widths in Module::spiConfig width array.
+  \{
+*/
+
+/*! \def RADIOLIB_MODULE_SPI_WIDTH_ADDR Position of the address width. */
+#define RADIOLIB_MODULE_SPI_WIDTH_ADDR                          (0)
+
+/*! \def RADIOLIB_MODULE_SPI_WIDTH_CMD Position of the command width. */
+#define RADIOLIB_MODULE_SPI_WIDTH_CMD                           (1)
+
+/*! \def RADIOLIB_MODULE_SPI_WIDTH_STATUS Position of the status width. */
+#define RADIOLIB_MODULE_SPI_WIDTH_STATUS                        (2)
+
+/*!
+  \}
+*/
 
 /*!
   \class Module
@@ -31,43 +73,49 @@
 class Module {
   public:
     /*!
-     * \brief The maximum number of pins supported by the RF switch
-     * code.
-     *
-     * Note: It is not recommended to use this constant in your sketch
-     * when defining a rfswitch pins array, to prevent issues when this
-     * value is ever increased and such an array gets extra zero
-     * elements (that will be interpreted as pin 0).
-     */
-    static const size_t RFSWITCH_MAX_PINS = 3;
+      \brief The maximum number of pins supported by the RF switch code.
+      Note: It is not recommended to use this constant in your sketch
+      when defining a rfswitch pins array, to prevent issues when this
+      value is ever increased and such an array gets extra zero
+      elements (that will be interpreted as pin 0).
+    */
+    static const size_t RFSWITCH_MAX_PINS = 5;
 
     /*!
-     * Description of RF switch pin states for a single mode.
-     *
-     * See setRfSwitchTable() for details.
-     */
+      \struct RfSwitchMode_t
+      \brief Description of RF switch pin states for a single mode.
+      See \ref setRfSwitchTable for details.
+    */
     struct RfSwitchMode_t {
+      /*! \brief RF switching mode, one of \ref OpMode_t or a custom radio-defined value. */
       uint8_t mode;
+
+      /*! \brief Output pin values */
       uint32_t values[RFSWITCH_MAX_PINS];
     };
 
     /*!
-     * Constants to use in a mode table set be setRfSwitchTable. These
-     * constants work for most radios, but some radios define their own
-     * constants to be used instead.
-     *
-     * See setRfSwitchTable() for details.
-     */
+      \enum OpMode_t
+      \brief Constants to use in a mode table set be setRfSwitchTable. These
+      constants work for most radios, but some radios define their own
+      constants to be used instead.
+     
+      See \ref setRfSwitchTable for details.
+    */
     enum OpMode_t {
-      /*! End of table marker, use \ref END_OF_MODE_TABLE constant
-       * instead. Value is zero to ensure zero-initialized mode ends the
-       * table */
+      /*!
+        \brief End of table marker, use \ref END_OF_MODE_TABLE constant instead.
+        Value is zero to ensure zero-initialized mode ends the table.
+      */
       MODE_END_OF_TABLE = 0,
-      /*! Idle mode */
+
+      /*! \brief Idle mode */
       MODE_IDLE,
-      /*! Receive mode */
+
+      /*! \brief Receive mode */
       MODE_RX,
-      /*! Transmission mode */
+
+      /*! \brief Transmission mode */
       MODE_TX,
     };
 
@@ -111,64 +159,70 @@ class Module {
 
     /*!
       \brief Overload for assignment operator.
-      \param frame rvalue Module.
+      \param mod rvalue Module.
     */
     Module& operator=(const Module& mod);
 
     // public member variables
-    /*!
-      \brief Hardware abstraction layer to be used.
-    */
+    /*! \brief Hardware abstraction layer to be used. */
     RadioLibHal* hal = NULL;
 
-    /*!
-      \brief Basic SPI read command. Defaults to 0x00.
-    */
-    uint8_t SPIreadCommand = 0b00000000;
-
-    /*!
-      \brief Basic SPI write command. Defaults to 0x80.
-    */
-    uint8_t SPIwriteCommand = 0b10000000;
-
-    /*!
-      \brief Basic SPI no-operation command. Defaults to 0x00.
-    */
-    uint8_t SPInopCommand = 0x00;
-
-    /*!
-      \brief Basic SPI status read command. Defaults to 0x00.
-    */
-    uint8_t SPIstatusCommand = 0x00;
-
-    /*!
-      \brief SPI address width. Defaults to 8, currently only supports 8 and 16-bit addresses.
-    */
-    uint8_t SPIaddrWidth = 8;
-
-    /*!
-      \brief Whether the SPI interface is stream-type (e.g. SX126x) or register-type (e.g. SX127x).
-      Defaults to register-type SPI interfaces.
-    */
-    bool SPIstreamType = false;
-
-    /*!
-      \brief The last recorded SPI stream error.
-    */
-    int16_t SPIstreamError = RADIOLIB_ERR_UNKNOWN;
-
-    /*!
-      \brief SPI status parsing callback typedef.
-    */
+    /*! \brief Callback for parsing SPI status. */
     typedef int16_t (*SPIparseStatusCb_t)(uint8_t in);
 
-    /*!
-      \brief Callback to function that will parse the module-specific status codes to RadioLib status codes.
-      Typically used for modules with SPI stream-type interface (e.g. SX126x/SX128x).
-    */
-    SPIparseStatusCb_t SPIparseStatusCb = nullptr;
+    /*! \brief Callback for validation SPI status. */
+    typedef int16_t (*SPIcheckStatusCb_t)(Module* mod);
 
-    #if defined(RADIOLIB_INTERRUPT_TIMING)
+    enum BitWidth_t {
+      BITS_0 = 0,
+      BITS_8 = 8,
+      BITS_16 = 16,
+      BITS_32 = 32,
+    };
+
+    /*!
+      \struct SPIConfig_t
+      \brief SPI configuration structure.
+    */
+    struct SPIConfig_t {
+      /*! \brief Whether the SPI module is stream-type (SX126x/8x) or registrer access type (SX127x, CC1101 etc). */
+      bool stream;
+
+      /*! \brief Last recorded SPI error - only updated for modules that return status during SPI transfers. */
+      int16_t err;
+
+      /*! \brief SPI commands */
+      uint16_t cmds[4];
+
+      /*! \brief Bit widths of SPI addresses, commands and status bytes */
+      BitWidth_t widths[3];
+
+      /*! \brief Byte position of status command in SPI stream */
+      uint8_t statusPos;
+
+      /*! \brief Callback for parsing SPI status. */
+      SPIparseStatusCb_t parseStatusCb;
+
+      /*! \brief Callback for validation SPI status. */
+      SPIcheckStatusCb_t checkStatusCb;
+
+      /*! \brief Timeout in ms when waiting for GPIO signals. */
+      RadioLibTime_t timeout;
+    };
+
+    /*! \brief SPI configuration structure. The default configuration corresponds to register-access modules, such as SX127x. */
+    SPIConfig_t spiConfig = {
+      .stream = false,
+      .err = RADIOLIB_ERR_UNKNOWN,
+      .cmds = { 0x00, 0x80, 0x00, 0x00 },
+      .widths = { Module::BITS_8, Module::BITS_0, Module::BITS_8 },
+      .statusPos = 0,
+      .parseStatusCb = nullptr,
+      .checkStatusCb = nullptr,
+      .timeout = 1000,
+    };
+
+    #if RADIOLIB_INTERRUPT_TIMING
 
     /*!
       \brief Timer interrupt setup callback typedef.
@@ -208,7 +262,7 @@ class Module {
       \param lsb Least significant bit of the register variable. Bits below this one will be masked out.
       \returns Masked register value or status code.
     */
-    int16_t SPIgetRegValue(uint16_t reg, uint8_t msb = 7, uint8_t lsb = 0);
+    int16_t SPIgetRegValue(uint32_t reg, uint8_t msb = 7, uint8_t lsb = 0);
 
     /*!
       \brief Overwrite-safe SPI write method with verification. This method is the preferred SPI write mechanism.
@@ -218,9 +272,10 @@ class Module {
       \param lsb Least significant bit of the register variable. Bits below this one will not be affected by the write operation.
       \param checkInterval Number of milliseconds between register writing and verification reading. Some registers need up to 10ms to process the change.
       \param checkMask Mask of bits to check, only bits set to 1 will be verified.
+      \param force Write new value even if the old value is the same.
       \returns \ref status_codes
     */
-    int16_t SPIsetRegValue(uint16_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF);
+    int16_t SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF, bool force = false);
 
     /*!
       \brief SPI burst read method.
@@ -228,14 +283,14 @@ class Module {
       \param numBytes Number of bytes that will be read.
       \param inBytes Pointer to array that will hold the read data.
     */
-    void SPIreadRegisterBurst(uint16_t reg, size_t numBytes, uint8_t* inBytes);
+    void SPIreadRegisterBurst(uint32_t reg, size_t numBytes, uint8_t* inBytes);
 
     /*!
       \brief SPI basic read method. Use of this method is reserved for special cases, SPIgetRegValue should be used instead.
       \param reg Address of SPI register to read.
       \returns Value that was read from register.
     */
-    uint8_t SPIreadRegister(uint16_t reg);
+    uint8_t SPIreadRegister(uint32_t reg);
 
     /*!
       \brief SPI burst write method.
@@ -243,24 +298,24 @@ class Module {
       \param data Pointer to array that holds the data that will be written.
       \param numBytes Number of bytes that will be written.
     */
-    void SPIwriteRegisterBurst(uint16_t reg, uint8_t* data, size_t numBytes);
+    void SPIwriteRegisterBurst(uint32_t reg, const uint8_t* data, size_t numBytes);
 
     /*!
       \brief SPI basic write method. Use of this method is reserved for special cases, SPIsetRegValue should be used instead.
       \param reg Address of SPI register to write.
       \param data Value that will be written to the register.
     */
-    void SPIwriteRegister(uint16_t reg, uint8_t data);
+    void SPIwriteRegister(uint32_t reg, uint8_t data);
 
     /*!
       \brief SPI single transfer method.
       \param cmd SPI access command (read/write/burst/...).
       \param reg Address of SPI register to transfer to/from.
-      \param dataOut Data that will be transfered from master to slave.
-      \param dataIn Data that was transfered from slave to master.
+      \param dataOut Data that will be transferred from master to slave.
+      \param dataIn Data that was transferred from slave to master.
       \param numBytes Number of bytes to transfer.
     */
-    void SPItransfer(uint8_t cmd, uint16_t reg, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes);
+    void SPItransfer(uint16_t cmd, uint32_t reg, const uint8_t* dataOut, uint8_t* dataIn, size_t numBytes);
 
     /*!
       \brief Method to check the result of last SPI stream transfer.
@@ -277,7 +332,7 @@ class Module {
       \param verify Whether to verify the result of the transaction after it is finished.
       \returns \ref status_codes
     */
-    int16_t SPIreadStream(uint8_t cmd, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
+    int16_t SPIreadStream(uint16_t cmd, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
     
     /*!
       \brief Method to perform a read transaction with SPI stream.
@@ -289,7 +344,7 @@ class Module {
       \param verify Whether to verify the result of the transaction after it is finished.
       \returns \ref status_codes
     */
-    int16_t SPIreadStream(uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
+    int16_t SPIreadStream(const uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
     
     /*!
       \brief Method to perform a write transaction with SPI stream.
@@ -300,7 +355,7 @@ class Module {
       \param verify Whether to verify the result of the transaction after it is finished.
       \returns \ref status_codes
     */
-    int16_t SPIwriteStream(uint8_t cmd, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
+    int16_t SPIwriteStream(uint16_t cmd, const uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
 
     /*!
       \brief Method to perform a write transaction with SPI stream.
@@ -312,29 +367,25 @@ class Module {
       \param verify Whether to verify the result of the transaction after it is finished.
       \returns \ref status_codes
     */
-    int16_t SPIwriteStream(uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
+    int16_t SPIwriteStream(const uint8_t* cmd, uint8_t cmdLen, const uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
     
     /*!
       \brief SPI single transfer method for modules with stream-type SPI interface (SX126x, SX128x etc.).
       \param cmd SPI operation command.
       \param cmdLen SPI command length in bytes.
       \param write Set to true for write commands, false for read commands.
-      \param dataOut Data that will be transfered from master to slave.
-      \param dataIn Data that was transfered from slave to master.
+      \param dataOut Data that will be transferred from master to slave.
+      \param dataIn Data that was transferred from slave to master.
       \param numBytes Number of bytes to transfer.
       \param waitForGpio Whether to wait for some GPIO at the end of transfer (e.g. BUSY line on SX126x/SX128x).
-      \param timeout GPIO wait period timeout in milliseconds.
       \returns \ref status_codes
     */
-    int16_t SPItransferStream(uint8_t* cmd, uint8_t cmdLen, bool write, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio, uint32_t timeout);
+    int16_t SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, const uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio);
 
     // pin number access methods
-
-    /*!
-      \brief Access method to get the pin number of SPI chip select.
-      \returns Pin number of SPI chip select configured in the constructor.
-    */
-    uint32_t getCs() const { return(csPin); }
+    // getCs is omitted on purpose, as it can interfere when accessing the SPI in a concurrent environment
+    // so it is considered to be part of the SPI pins and hence not accessible from outside
+    // see https://github.com/jgromes/RadioLib/discussions/1364
 
     /*!
       \brief Access method to get the pin number of interrupt/GPIO.
@@ -438,7 +489,7 @@ class Module {
 
     /*!
       \brief Find a mode in the RfSwitchTable.
-      \param The mode to find.
+      \param mode The mode to find.
       \returns A pointer to the RfSwitchMode_t struct in the table that
       matches the passed mode. Returns nullptr if no rfswitch pins are
       configured, or the passed mode is not listed in the table.
@@ -458,39 +509,19 @@ class Module {
       \param start Waiting start timestamp, in microseconds.
       \param len Waiting duration, in microseconds;
     */
-    void waitForMicroseconds(uint32_t start, uint32_t len);
+    void waitForMicroseconds(RadioLibTime_t start, RadioLibTime_t len);
 
-    /*!
-      \brief Function to reflect bits within a byte.
-    */
-    static uint8_t flipBits(uint8_t b);
-
-    /*!
-      \brief Function to reflect bits within an integer.
-    */
-    static uint16_t flipBits16(uint16_t i);
-
-    /*!
-      \brief Function to dump data as hex into the debug port.
-      \param data Data to dump.
-      \param len Number of bytes to dump.
-      \param width Word width (1 for uint8_t, 2 for uint16_t, 4 for uint32_t).
-      \param be Print multi-byte data as big endian. Defaults to false.
-    */
-    static void hexdump(uint8_t* data, size_t len, uint32_t offset = 0, uint8_t width = 1, bool be = false);
-
+    #if RADIOLIB_DEBUG
     /*!
       \brief Function to dump device registers as hex into the debug port.
+      \param level RadioLib debug level, set to NULL to not print.
       \param start First address to dump.
       \param len Number of bytes to dump.
     */
-    void regdump(uint16_t start, size_t len);
-
-    #if defined(RADIOLIB_DEBUG) and defined(RADIOLIB_BUILD_ARDUINO)
-    static size_t serialPrintf(const char* format, ...);
+    void regdump(const char* level, uint16_t start, size_t len);
     #endif
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     uint32_t csPin = RADIOLIB_NC;
@@ -499,10 +530,10 @@ class Module {
     uint32_t gpioPin = RADIOLIB_NC;
 
     // RF switch pins and table
-    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
+    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
     const RfSwitchMode_t *rfSwitchTable = nullptr;
 
-    #if defined(RADIOLIB_INTERRUPT_TIMING)
+    #if RADIOLIB_INTERRUPT_TIMING
     uint32_t prevTimingLen = 0;
     #endif
 };

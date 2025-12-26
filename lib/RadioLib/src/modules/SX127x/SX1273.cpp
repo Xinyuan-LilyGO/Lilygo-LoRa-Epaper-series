@@ -1,5 +1,5 @@
 #include "SX1273.h"
-#if !defined(RADIOLIB_EXCLUDE_SX127X)
+#if !RADIOLIB_EXCLUDE_SX127X
 
 SX1273::SX1273(Module* mod) : SX1272(mod) {
 
@@ -7,7 +7,8 @@ SX1273::SX1273(Module* mod) : SX1272(mod) {
 
 int16_t SX1273::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, int8_t power, uint16_t preambleLength, uint8_t gain) {
   // execute common part
-  int16_t state = SX127x::begin(RADIOLIB_SX1272_CHIP_VERSION, syncWord, preambleLength);
+  uint8_t version = RADIOLIB_SX1272_CHIP_VERSION;
+  int16_t state = SX127x::begin(&version, 1, syncWord, preambleLength);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -64,6 +65,86 @@ int16_t SX1273::setSpreadingFactor(uint8_t sf) {
   }
 
   return(state);
+}
+
+int16_t SX1273::setDataRate(DataRate_t dr, ModemType_t modem) {
+  // get the current modem
+  ModemType_t currentModem;
+  int16_t state = this->getModem(&currentModem);
+  RADIOLIB_ASSERT(state);
+
+  // switch over if the requested modem is different
+  if(modem != RADIOLIB_MODEM_NONE && modem != currentModem) {
+    state = this->standby();
+    RADIOLIB_ASSERT(state);
+    state = this->setModem(modem);
+    RADIOLIB_ASSERT(state);
+  }
+
+  if(modem == RADIOLIB_MODEM_NONE) {
+    modem = currentModem;
+  }
+
+  // select interpretation based on modem
+  if(modem == RADIOLIB_MODEM_FSK) {
+    // set the bit rate
+    state = this->setBitRate(dr.fsk.bitRate);
+    RADIOLIB_ASSERT(state);
+
+    // set the frequency deviation
+    state = this->setFrequencyDeviation(dr.fsk.freqDev);
+
+  } else if(modem == RADIOLIB_MODEM_LORA) {
+    // set the spreading factor
+    state = this->setSpreadingFactor(dr.lora.spreadingFactor);
+    RADIOLIB_ASSERT(state);
+
+    // set the bandwidth
+    state = this->setBandwidth(dr.lora.bandwidth);
+  }
+
+  return(state);
+}
+
+int16_t SX1273::checkDataRate(DataRate_t dr, ModemType_t modem) {
+  int16_t state = RADIOLIB_ERR_UNKNOWN;
+
+  // retrieve modem if not supplied
+  if(modem == RADIOLIB_MODEM_NONE) {
+    state = this->getModem(&modem);
+    RADIOLIB_ASSERT(state);
+  }
+
+  // select interpretation based on modem
+  if(modem == RADIOLIB_MODEM_FSK) {
+    RADIOLIB_CHECK_RANGE(dr.fsk.bitRate, 0.5f, 300.0f, RADIOLIB_ERR_INVALID_BIT_RATE);
+    if(!((dr.fsk.freqDev + dr.fsk.bitRate/2.0f <= 250.0f) && (dr.fsk.freqDev <= 200.0f))) {
+      return(RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION);
+    }
+    return(RADIOLIB_ERR_NONE);
+
+  } else if(modem == RADIOLIB_MODEM_LORA) {
+    RADIOLIB_CHECK_RANGE(dr.lora.spreadingFactor, 6, 9, RADIOLIB_ERR_INVALID_SPREADING_FACTOR);
+    RADIOLIB_CHECK_RANGE(dr.lora.bandwidth, 100.0f, 510.0f, RADIOLIB_ERR_INVALID_BANDWIDTH);
+    RADIOLIB_CHECK_RANGE(dr.lora.codingRate, 4, 8, RADIOLIB_ERR_INVALID_CODING_RATE);
+    return(RADIOLIB_ERR_NONE);
+  
+  }
+
+  return(state);
+}
+
+int16_t SX1273::setModem(ModemType_t modem) {
+  switch(modem) {
+    case(ModemType_t::RADIOLIB_MODEM_LORA): {
+      return(this->begin());
+    } break;
+    case(ModemType_t::RADIOLIB_MODEM_FSK): {
+      return(this->beginFSK());
+    } break;
+    default:
+      return(RADIOLIB_ERR_WRONG_MODEM);
+  }
 }
 
 #endif
