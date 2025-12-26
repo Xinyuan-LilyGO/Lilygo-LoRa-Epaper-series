@@ -97,7 +97,7 @@ void EPD_init(void)
     delay(10);
     display.fillScreen(GxEPD_WHITE);
     delay(10);
-    display.drawExampleBitmap(LILYGO_logo, 0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, GxEPD_BLACK);
+    // display.drawExampleBitmap(LILYGO_logo, 0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, GxEPD_BLACK);
     display.update();
 }
 

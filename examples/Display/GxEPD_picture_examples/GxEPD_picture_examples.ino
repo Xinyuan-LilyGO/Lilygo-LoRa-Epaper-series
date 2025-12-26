@@ -45,8 +45,8 @@ void setup()
     display.drawExampleBitmap(gImage_pkq0, 0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, GxEPD_WHITE);
     display.update(); 
     delay(1000);
-    display.drawExampleBitmap(LILYGO_logo, 0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, GxEPD_BLACK);
-    display.update();
+    // display.drawExampleBitmap(LILYGO_logo, 0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, GxEPD_BLACK);
+    // display.update();
     Serial.println("EDP_MODE");
 
 }
